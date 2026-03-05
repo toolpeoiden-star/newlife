@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>무료 예상탕감률 조회</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
+<script>
+(function(){
+  document.addEventListener('contextmenu',function(e){e.preventDefault();});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='F12'||e.keyCode===123){e.preventDefault();}
+    if(e.ctrlKey&&e.shiftKey&&['I','i','J','j','C','c'].includes(e.key)){e.preventDefault();}
+    if(e.ctrlKey&&['U','u','S','s'].includes(e.key)){e.preventDefault();}
+  });
+  document.addEventListener('selectstart',function(e){if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT')return true;e.preventDefault();});
+})();
+</script>
+<style>
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --bg: #FFFFFF;
+  --bg-secondary: #F7F8FA;
+  --bg-card: #F9FAFB;
+  --text-primary: #191F28;
+  --text-secondary: #6B7684;
+  --text-tertiary: #8B95A1;
+  --blue: #3182F6;
+  --blue-bg: #EBF2FF;
+  --blue-dark: #1B64DA;
+  --green: #00C471;
+  --green-bg: #E8FAF0;
+  --red: #F04452;
+  --red-bg: #FFF0F0;
+  --border: #F2F4F6;
+  --divider: #ECEEF0;
+  --indigo: #4338CA;
+  --indigo-bg: #EEF2FF;
+  --fs: 1;
+  /* Unified spacing */
+  --px: 24px;
+  --top: calc(120px + var(--safe-top));
+  /* Unified font scale */
+  --t1: 24px; /* hero title */
+  --t2: 15px; /* section title */
+  --t3: 14px; /* body */
+  --t4: 13px; /* secondary */
+  --t5: 11px; /* caption */
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text-primary);-webkit-font-smoothing:antialiased;touch-action:manipulation;-webkit-user-select:none;user-select:none;}
+input,textarea,select{-webkit-user-select:text;user-select:text;}
+
+.app{width:100%;height:100vh;height:100dvh;max-width:480px;margin:0 auto;display:flex;flex-direction:column;position:relative;overflow:hidden;background:var(--bg);}
+
+/* Topbar */
+.topbar{padding:calc(12px + var(--safe-top)) var(--px) 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:10;position:absolute;top:0;left:0;right:0;background:transparent;transition:background 0.3s;}
+.topbar.solid{background:var(--bg);}
+.topbar-back{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;border-radius:50%;opacity:0;pointer-events:none;transition:all 0.2s;}
+.topbar-back.visible{opacity:1;pointer-events:auto;}
+.topbar-back:active{background:rgba(0,0,0,0.05);}
+.topbar-back svg{width:24px;height:24px;color:var(--text-primary);}
+.topbar-dark .topbar-back svg{color:#fff;}
+.topbar-dark .topbar-back:active{background:rgba(255,255,255,0.1);}
+.topbar-title{font-size:var(--t2);font-weight:600;color:var(--text-primary);opacity:0;transition:opacity 0.3s;}
+.topbar-title.visible{opacity:1;}
+.topbar-step{font-size:var(--t4);font-weight:500;color:var(--text-tertiary);min-width:40px;text-align:right;opacity:0;transition:opacity 0.3s;}
+.topbar-step.visible{opacity:1;}
+
+/* Progress */
+.progress-bar{height:3px;position:absolute;top:calc(52px + var(--safe-top));left:0;right:0;z-index:10;opacity:0;transition:opacity 0.3s;background:var(--border);}
+.progress-bar.visible{opacity:1;}
+.progress-fill{height:100%;background:var(--blue);border-radius:0 2px 2px 0;width:0%;transition:width 0.4s cubic-bezier(0.22,1,0.36,1);position:absolute;top:0;left:0;}
+
+/* Slides */
+.slides-container{position:absolute;inset:0;overflow:hidden;}
+.slide{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;opacity:0;transform:translateX(80px);transition:all 0.45s cubic-bezier(0.22,1,0.36,1);pointer-events:none;scrollbar-width:none;}
+.slide::-webkit-scrollbar{display:none;}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto;}
+.slide.exit-left{opacity:0;transform:translateX(-80px);pointer-events:none;}
+.slide.exit-right{opacity:0;transform:translateX(80px);pointer-events:none;}
+
+/* ===== SLIDE 1 ===== */
+.intro-slide{background:var(--bg);display:flex;flex-direction:column;}
+.intro-slide-1{justify-content:center;align-items:center;text-align:center;padding:0 var(--px) calc(80px + var(--safe-bottom));background:#fff;}
+.s1-wrap{display:flex;flex-direction:column;align-items:center;width:100%;max-width:360px;}
+.s1-title{font-size:var(--t1);font-weight:800;line-height:1.4;letter-spacing:-0.8px;color:var(--text-primary);margin-bottom:24px;}
+.s1-title em{font-style:normal;color:var(--blue);}
+.s1-video{width:100%;max-width:240px;aspect-ratio:1/1;border-radius:20px;overflow:hidden;border:1.5px solid var(--border);background:#F7F8FA;}
+.s1-video video{width:100%;height:100%;object-fit:cover;}
+
+/* ===== SLIDE 2 ===== */
+.intro-slide-2-new{overflow-y:auto !important;padding-bottom:calc(80px + var(--safe-bottom)) !important;position:relative;}
+.s2-bg-video{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:0;filter:brightness(0.85) saturate(0.9);}
+.s2-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,rgba(255,255,255,0.75) 0%,rgba(255,255,255,0.88) 40%,rgba(255,255,255,0.95) 100%);z-index:1;}
+.s2-wrap{padding:var(--top) var(--px) 0;display:flex;flex-direction:column;position:relative;z-index:2;}
+.s2-title{font-size:var(--t1);font-weight:800;line-height:1.35;letter-spacing:-0.8px;color:var(--text-primary);margin-bottom:4px;}
+.s2-title em{font-style:normal;color:var(--blue);}
+.s2-sub{font-size:var(--t4);color:var(--text-secondary);margin-bottom:24px;font-weight:500;}
+.benefit-list{display:flex;flex-direction:column;gap:0;margin-bottom:16px;}
+.benefit-row{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.benefit-row:last-child{border-bottom:none;}
+.benefit-row:active{opacity:0.7;}
+.benefit-num{width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:var(--t5);font-weight:700;color:var(--blue);background:var(--blue-bg);border-radius:50%;flex-shrink:0;margin-top:1px;}
+.benefit-body{flex:1;min-width:0;}
+.benefit-title{font-size:var(--t3);font-weight:700;color:var(--text-primary);margin-bottom:2px;line-height:1.4;}
+.benefit-desc{font-size:var(--t5);color:var(--text-tertiary);line-height:1.5;}
+.benefit-arrow{color:var(--text-tertiary);font-size:14px;flex-shrink:0;align-self:center;opacity:0.4;}
+.s2-stats{padding:16px 0;}
+.s2-stat-line{font-size:var(--t3);color:var(--text-secondary);line-height:1.7;text-align:center;}
+.s2-stat-line strong{color:var(--blue);font-weight:800;font-size:17px;}
+
+/* ===== SLIDE 3 - Toss 8px grid spacing ===== */
+.intro-slide-3{overflow-y:auto !important;overflow-x:hidden;padding-bottom:calc(96px + var(--safe-bottom)) !important;}
+.s3-wrap{padding:var(--top) 0 0;display:flex;flex-direction:column;gap:40px;}
+.s3-section-title{font-size:var(--t2);font-weight:800;color:var(--text-primary);margin-bottom:16px;padding:0 var(--px);}
+/* Review */
+.review-section{overflow:hidden;}
+.review-track-wrap{width:100%;overflow:hidden;mask-image:linear-gradient(90deg,transparent 0%,black 3%,black 97%,transparent 100%);-webkit-mask-image:linear-gradient(90deg,transparent 0%,black 3%,black 97%,transparent 100%);}
+.review-track{display:flex;gap:12px;animation:reviewScroll 30s linear infinite;padding:0 32px;width:max-content;}
+.review-track:hover{animation-play-state:paused;}
+@keyframes reviewScroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.review-card{flex-shrink:0;width:260px;padding:20px;background:white;border:1px solid var(--border);border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+.review-card .rv-top{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.review-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;overflow:hidden;background:var(--bg-secondary);}
+.review-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+.review-meta{min-width:0;overflow:hidden;}
+.review-meta .review-name{font-size:var(--t3);font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.review-meta .review-tag{font-size:var(--t5);color:var(--text-tertiary);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.review-card .rv-body{font-size:var(--t4);color:var(--text-secondary);line-height:1.65;}
+.review-card .rv-body strong{color:var(--text-primary);font-weight:600;}
+.review-card .rv-result{margin-top:12px;padding:10px 12px;background:var(--indigo-bg);border-radius:10px;font-size:var(--t4);font-weight:700;color:var(--indigo);text-align:center;}
+/* Savings */
+.savings-section{padding:0 var(--px);}
+.savings-stage{position:relative;min-height:200px;overflow:hidden;}
+.savings-card{position:absolute;inset:0;background:white;border:1px solid var(--border);border-radius:16px;padding:20px;opacity:0;transform:translateY(24px) scale(0.97);transition:all 0.5s cubic-bezier(0.22,1,0.36,1);pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+.savings-card.active{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;}
+.savings-card.exit-up{opacity:0;transform:translateY(-24px) scale(0.97);}
+.sv-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.sv-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;overflow:hidden;background:var(--bg-secondary);}
+.sv-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+.sv-info{flex:1;min-width:0;}
+.sv-name{font-size:var(--t2);font-weight:700;color:var(--text-primary);}
+.sv-desc{font-size:var(--t5);color:var(--text-tertiary);margin-top:2px;}
+.sv-badge{font-size:var(--t2);font-weight:800;color:var(--green);flex-shrink:0;}
+.sv-amounts{display:flex;align-items:center;gap:0;margin-bottom:16px;border-radius:12px;overflow:hidden;}
+.sv-amt-box{flex:1;text-align:center;padding:14px 8px;}
+.sv-amt-box.before{background:rgba(240,68,82,0.04);}
+.sv-amt-box.after{background:rgba(0,196,113,0.05);}
+.sv-amt-label{font-size:var(--t5);font-weight:600;color:var(--text-tertiary);margin-bottom:4px;}
+.sv-amt-value{font-size:20px;font-weight:800;letter-spacing:-0.5px;}
+.sv-amt-box.before .sv-amt-value{color:var(--red);text-decoration:line-through;text-decoration-thickness:1.5px;}
+.sv-amt-box.after .sv-amt-value{color:var(--green);}
+.sv-amt-arrow{font-size:12px;color:var(--text-tertiary);flex-shrink:0;padding:0 4px;}
+.sv-progress{height:4px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:8px;}
+.sv-progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--blue),var(--indigo));width:0%;transition:width 1.2s cubic-bezier(0.22,1,0.36,1);}
+.sv-progress-text{display:flex;justify-content:space-between;font-size:var(--t5);color:var(--text-tertiary);}
+.sv-progress-text strong{color:var(--indigo);font-weight:700;}
+.savings-dots{display:flex;justify-content:center;gap:6px;margin-top:12px;}
+.savings-dot{width:6px;height:6px;border-radius:50%;background:var(--divider);transition:all 0.3s;}
+.savings-dot.active{background:var(--blue);width:16px;border-radius:3px;}
+/* CTA text */
+.s3-cta-text{padding:0 var(--px);text-align:center;}
+.s3-cta-text p{font-size:var(--t3);color:var(--text-secondary);line-height:1.8;}
+.s3-cta-text p strong{color:var(--text-primary);font-weight:700;}
+
+/* Benefit popup */
+.benefit-popup-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;align-items:flex-end;justify-content:center;}
+.benefit-popup-backdrop.show{display:flex;}
+.benefit-popup{background:white;width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:24px var(--px) calc(24px + var(--safe-bottom));animation:modalSlideUp 0.3s ease;}
+@keyframes modalSlideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.benefit-popup-title{font-size:18px;font-weight:800;color:var(--text-primary);margin-bottom:12px;line-height:1.4;}
+.benefit-popup-body{font-size:var(--t3);color:var(--text-secondary);line-height:1.7;margin-bottom:20px;}
+.benefit-popup-body strong{color:var(--text-primary);font-weight:600;}
+.benefit-popup-close{width:100%;padding:14px;background:var(--blue);color:white;border:none;border-radius:14px;font-size:var(--t2);font-weight:700;cursor:pointer;font-family:inherit;}
+
+.swipe-hint{display:none;}
+.auto-timer{display:none;}
+
+/* Floating bar */
+.floating-bar{position:absolute;bottom:0;left:0;right:0;z-index:20;padding:12px var(--px) calc(14px + var(--safe-bottom));background:linear-gradient(transparent,var(--bg) 20%);pointer-events:none;}
+.floating-bar.dark-mode{background:linear-gradient(transparent,rgba(255,255,255,0.9) 30%);}
+.floating-bar>*{pointer-events:auto;}
+.btn-primary{width:100%;padding:16px 20px;font-size:calc(var(--t2) * var(--fs));font-weight:700;font-family:inherit;color:white;border:none;border-radius:14px;cursor:pointer;transition:all 0.2s;background:var(--blue);min-height:52px;display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden;}
+.btn-primary:active{transform:scale(0.98);background:var(--blue-dark);}
+.btn-primary:disabled{background:#DCDEE3;color:#B0B8C1;cursor:not-allowed;transform:none;animation:none !important;}
+.btn-primary.bounce{animation:ctaBounce 2s cubic-bezier(0.28,0.84,0.42,1) infinite;box-shadow:0 4px 20px rgba(67,56,202,0.4);}
+.btn-primary.bounce::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,0.25) 50%,transparent 70%);animation:ctaShine 2s ease-in-out infinite;pointer-events:none;}
+@keyframes ctaBounce{0%,100%{transform:translateY(0) scale(1);}15%{transform:translateY(-12px) scale(1.03);}30%{transform:translateY(0) scale(0.98);}42%{transform:translateY(-6px) scale(1.01);}55%{transform:translateY(0) scale(1);}}
+@keyframes ctaShine{0%{left:-100%;}40%{left:120%;}100%{left:120%;}}
+.btn-primary.green{background:var(--green);}
+.btn-primary.indigo{background:var(--indigo);}
+.btn-secondary{width:100%;padding:10px;font-size:calc(var(--t4) * var(--fs));font-weight:500;font-family:inherit;color:var(--text-tertiary);border:none;background:none;cursor:pointer;margin-top:6px;border-radius:12px;text-align:center;}
+.btn-secondary:active{background:var(--bg-secondary);}
+
+/* Question slides */
+.question-slide{background:var(--bg);padding-top:var(--top);}
+.question-content{padding:20px var(--px) 0;flex:1;}
+.question-label{font-size:calc(var(--t4) * var(--fs));font-weight:600;color:var(--blue);margin-bottom:12px;}
+.question-title{font-size:calc(22px * var(--fs));font-weight:700;line-height:1.4;color:var(--text-primary);margin-bottom:8px;letter-spacing:-0.5px;white-space:pre-line;}
+.question-hint{font-size:calc(var(--t3) * var(--fs));color:var(--text-tertiary);line-height:1.5;margin-bottom:24px;white-space:pre-line;}
+.question-hint strong{color:var(--text-secondary);font-weight:500;}
+.choices{display:flex;flex-direction:column;gap:8px;padding-bottom:20px;}
+.choice-item{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:var(--bg-card);border:1.5px solid var(--border);border-radius:14px;font-size:calc(var(--t2) * var(--fs));font-weight:500;color:var(--text-primary);cursor:pointer;transition:all 0.2s;font-family:inherit;min-height:52px;text-align:left;width:100%;}
+.choice-item:active{transform:scale(0.98);background:var(--bg-secondary);}
+.choice-item.selected{border-color:var(--blue);background:var(--blue-bg);color:var(--blue);}
+.choice-item:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+.choice-item .ck{width:22px;height:22px;border-radius:50%;border:2px solid var(--divider);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.choice-item.selected .ck{border-color:var(--blue);background:var(--blue);}
+.choice-item.selected .ck svg{opacity:1;}
+.choice-item .ck svg{opacity:0;transition:opacity 0.2s;}
+.number-input-wrapper{margin-bottom:8px;}
+.number-input{width:100%;padding:16px 18px;font-size:calc(26px * var(--fs));font-weight:700;font-family:inherit;border:2px solid var(--border);border-radius:14px;background:var(--bg-card);color:var(--text-primary);transition:border-color 0.2s;outline:none;-moz-appearance:textfield;}
+.number-input::-webkit-outer-spin-button,.number-input::-webkit-inner-spin-button{-webkit-appearance:none;}
+.number-input::placeholder{color:var(--text-tertiary);font-weight:500;font-size:18px;}
+.number-input:focus{border-color:var(--blue);}
+.number-unit{font-size:calc(var(--t3) * var(--fs));color:var(--text-tertiary);margin-top:8px;padding-left:4px;}
+.number-unit strong{color:var(--text-secondary);font-weight:600;}
+.tip-box{margin-top:16px;padding:14px 16px;background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border-radius:14px;border:1.5px solid #93C5FD;margin-bottom:100px;}
+.tip-box-title{font-size:calc(var(--t3) * var(--fs));font-weight:700;color:#1D4ED8;margin-bottom:6px;}
+.tip-box-text{font-size:calc(var(--t4) * var(--fs));color:#1E40AF;line-height:1.7;}
+
+/* Font size selector */
+.fontsize-slide{background:var(--bg);padding-top:calc(60px + var(--safe-top));display:flex;flex-direction:column;justify-content:center;}
+.fontsize-content{padding:0 var(--px);flex:1;display:flex;flex-direction:column;justify-content:center;}
+.fontsize-emoji{font-size:40px;text-align:center;margin-bottom:12px;}
+.fontsize-title{font-size:22px;font-weight:700;text-align:center;color:var(--text-primary);margin-bottom:6px;}
+.fontsize-sub{font-size:var(--t3);text-align:center;color:var(--text-tertiary);margin-bottom:28px;}
+.fontsize-options{display:flex;flex-direction:column;gap:8px;}
+.fontsize-btn{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--bg-card);border:2px solid var(--border);border-radius:16px;cursor:pointer;transition:all 0.2s;font-family:inherit;width:100%;text-align:left;}
+.fontsize-btn:active{transform:scale(0.98);}
+.fontsize-btn.selected{border-color:var(--blue);background:var(--blue-bg);}
+.fontsize-btn .fs-label{font-weight:600;color:var(--text-primary);}
+.fontsize-btn .fs-sample{color:var(--text-secondary);font-weight:400;}
+.fontsize-btn .fs-check{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;}
+.fontsize-btn.selected .fs-check{background:var(--blue);border-color:var(--blue);}
+.fontsize-btn.selected .fs-check svg{display:block;}
+.fontsize-btn .fs-check svg{display:none;}
+
+/* Gate form (before result) */
+.gate-slide{background:var(--bg);display:flex;flex-direction:column;justify-content:center;}
+.gate-content{padding:0 var(--px);flex:1;display:flex;flex-direction:column;justify-content:center;max-width:420px;margin:0 auto;width:100%;}
+.gate-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--green-bg);border-radius:20px;font-size:var(--t4);font-weight:700;color:var(--green);margin-bottom:16px;align-self:flex-start;}
+.gate-title{font-size:var(--t1);font-weight:800;line-height:1.35;letter-spacing:-0.8px;color:var(--text-primary);margin-bottom:8px;}
+.gate-desc{font-size:var(--t3);color:var(--text-secondary);margin-bottom:32px;line-height:1.5;}
+.gate-form-group{margin-bottom:16px;}
+.gate-form-label{font-size:var(--t3);font-weight:600;margin-bottom:8px;display:block;color:var(--text-primary);}
+.gate-form-label .req{color:var(--red);}
+.gate-input{width:100%;padding:14px 16px;font-size:var(--t2);font-family:inherit;border:1.5px solid var(--border);border-radius:14px;background:var(--bg-card);outline:none;transition:border-color 0.2s;}
+.gate-input:focus{border-color:var(--blue);}
+.gate-phone-row{display:flex;gap:8px;}
+.gate-phone-row select{padding:16px 10px;border:1.5px solid var(--border);border-radius:14px;font-size:16px;font-family:inherit;background:var(--bg-card);}
+.gate-phone-row input{flex:1;min-width:0;}
+.gate-agree{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--bg-card);border-radius:12px;margin:20px 0;}
+.gate-agree input[type="checkbox"]{width:20px;height:20px;accent-color:var(--blue);flex-shrink:0;}
+.gate-agree label{font-size:13px;color:var(--text-secondary);}
+.gate-skip{text-align:center;margin-top:8px;font-size:13px;color:var(--text-tertiary);cursor:pointer;padding:8px;}
+.gate-skip:active{color:var(--text-secondary);}
+
+/* Loading */
+.loading-slide{background:var(--bg);}
+.loading-content{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;padding:0 32px;}
+.loading-ring{width:72px;height:72px;margin-bottom:36px;position:relative;}
+.loading-ring::after{content:'';position:absolute;inset:0;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-title{font-size:calc(22px * var(--fs));font-weight:700;color:var(--text-primary);margin-bottom:8px;}
+.loading-desc{font-size:calc(14px * var(--fs));color:var(--text-tertiary);line-height:1.5;}
+.loading-steps{margin-top:36px;display:flex;flex-direction:column;gap:14px;width:100%;max-width:260px;}
+.loading-step{display:flex;align-items:center;gap:14px;font-size:15px;color:var(--text-tertiary);opacity:0;transform:translateY(10px);transition:all 0.5s cubic-bezier(0.22,1,0.36,1);}
+.loading-step.visible{opacity:1;transform:translateY(0);}
+.loading-step.done{color:var(--green);}
+.loading-step-icon{font-size:20px;flex-shrink:0;}
+
+/* Result */
+.result-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:1000;display:none;flex-direction:column;max-width:480px;margin:0 auto;}
+.result-overlay.show{display:flex;}
+.result-scroll{flex:1;overflow-y:auto;scrollbar-width:none;}
+.result-scroll::-webkit-scrollbar{display:none;}
+.result-top{padding:calc(12px + var(--safe-top)) 20px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:10;border-bottom:1px solid var(--divider);}
+.result-close{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;border-radius:50%;}
+.result-close:active{background:var(--bg-secondary);}
+.result-close svg{width:24px;height:24px;color:var(--text-primary);}
+.result-top-title{font-size:17px;font-weight:600;}
+.result-content{padding:0 24px 120px;}
+.r-section{padding:24px 0 0;}
+.r-section+.r-section{border-top:1px solid var(--divider);}
+.r-section-title{font-size:calc(13px * var(--fs));font-weight:600;color:var(--text-tertiary);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.r-section-title .ico{font-size:16px;}
+
+/* Hero celebration */
+.prob-hero-section{position:relative;overflow:hidden;background:linear-gradient(180deg,#EEF2FF 0%,#E0E7FF 40%,#C7D2FE 100%);margin:0 -24px;padding:40px 24px 32px;border-bottom:2px solid #A5B4FC;}
+.prob-confetti-wrap{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+.confetti{position:absolute;width:8px;height:8px;border-radius:2px;opacity:0;animation:confettiFall 3s ease-in-out infinite;}
+.c1{background:#3B82F6;left:8%;top:-10%;animation-delay:0s;width:6px;height:12px;}.c2{background:#8B5CF6;left:20%;top:-10%;animation-delay:0.3s;width:10px;height:6px;}.c3{background:#EC4899;left:35%;top:-10%;animation-delay:0.6s;width:5px;height:10px;}.c4{background:#F59E0B;left:50%;top:-10%;animation-delay:0.15s;width:8px;height:5px;}.c5{background:#10B981;left:65%;top:-10%;animation-delay:0.45s;width:6px;height:9px;}.c6{background:#6366F1;left:78%;top:-10%;animation-delay:0.75s;width:9px;height:6px;}.c7{background:#F43F5E;left:90%;top:-10%;animation-delay:0.2s;width:7px;height:11px;}.c8{background:#0EA5E9;left:14%;top:-10%;animation-delay:0.55s;width:10px;height:5px;}.c9{background:#A855F7;left:42%;top:-10%;animation-delay:0.85s;width:5px;height:8px;}.c10{background:#F97316;left:58%;top:-10%;animation-delay:0.35s;width:8px;height:6px;}.c11{background:#14B8A6;left:72%;top:-10%;animation-delay:0.65s;width:6px;height:10px;}.c12{background:#E879F9;left:85%;top:-10%;animation-delay:0.1s;width:9px;height:5px;}
+@keyframes confettiFall{0%{opacity:0;transform:translateY(0) rotate(0deg) scale(0.8);}10%{opacity:1;}90%{opacity:0.8;}100%{opacity:0;transform:translateY(420px) rotate(720deg) scale(0.3);}}
+.prob-hero{display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;z-index:1;}
+.prob-hero-badge{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:white;color:var(--green);font-size:calc(13px * var(--fs));font-weight:700;border-radius:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);margin-bottom:20px;}
+.prob-hero-label{font-size:calc(18px * var(--fs));font-weight:700;color:#4338CA;margin-bottom:16px;}
+.prob-hero-num{display:flex;align-items:baseline;justify-content:center;}
+.prob-hero-value{font-size:96px;font-weight:900;letter-spacing:-5px;line-height:1;background:linear-gradient(135deg,#3182F6 0%,#4F46E5 40%,#7C3AED 70%,#A855F7 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 6px 12px rgba(79,70,229,0.3));position:relative;}
+.prob-hero-value::after{content:attr(data-val);position:absolute;top:4px;left:4px;font-size:96px;font-weight:900;letter-spacing:-5px;line-height:1;background:linear-gradient(135deg,rgba(79,70,229,0.06),rgba(168,85,247,0.04));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;z-index:-1;}
+.prob-hero-unit{font-size:36px;font-weight:800;background:linear-gradient(135deg,#6366F1,#A855F7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-left:2px;}
+.prob-hero-bar{width:200px;height:6px;background:rgba(255,255,255,0.6);border-radius:3px;margin-top:20px;overflow:hidden;}
+.prob-hero-bar-fill{height:100%;background:linear-gradient(90deg,#3182F6,#7C3AED);border-radius:3px;width:0%;transition:width 1.5s cubic-bezier(0.22,1,0.36,1);}
+.prob-hero-status{font-size:calc(17px * var(--fs));font-weight:700;color:#4338CA;margin-top:18px;}
+.prob-hero-desc{font-size:calc(13px * var(--fs));color:#6366F1;margin-top:8px;line-height:1.6;max-width:300px;opacity:0.8;}
+
+/* Relief amount */
+.relief-box{background:linear-gradient(135deg,var(--indigo),#6D28D9);border-radius:20px;padding:28px;color:white;text-align:center;margin:20px 0 4px;}
+.relief-box .label{font-size:calc(14px * var(--fs));opacity:0.9;margin-bottom:8px;}
+.relief-box .amount{font-size:36px;font-weight:800;margin-bottom:4px;}
+.relief-box .amount span{font-size:16px;font-weight:600;}
+.relief-box .rate{font-size:calc(15px * var(--fs));background:rgba(255,255,255,0.2);display:inline-block;padding:6px 16px;border-radius:20px;margin-top:8px;}
+
+/* Compare */
+.compare-box{display:flex;gap:10px;margin-bottom:4px;}
+.compare-item{flex:1;padding:16px;border-radius:14px;text-align:center;}
+.compare-item.before{background:#FEF2F2;border:1.5px solid #FECACA;}
+.compare-item.after{background:#F0FDF4;border:1.5px solid #BBF7D0;}
+.compare-item .clabel{font-size:calc(12px * var(--fs));color:var(--text-tertiary);margin-bottom:6px;}
+.compare-item .cval{font-size:calc(18px * var(--fs));font-weight:700;}
+.compare-item.before .cval{color:var(--red);}
+.compare-item.after .cval{color:var(--green);}
+.compare-arrow{display:flex;align-items:center;font-size:20px;color:var(--indigo);}
+
+/* Monthly */
+.monthly-box{background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border-radius:14px;padding:16px;text-align:center;border:1.5px solid #93C5FD;margin-bottom:4px;}
+.monthly-box .mlabel{font-size:calc(12px * var(--fs));color:#1E40AF;margin-bottom:6px;}
+.monthly-box .mval{font-size:calc(24px * var(--fs));font-weight:800;color:#1E3A8A;}
+.monthly-box .mval span{font-size:calc(14px * var(--fs));}
+.monthly-box .mperiod{font-size:calc(11px * var(--fs));color:#3B82F6;margin-top:4px;}
+
+/* Stats row */
+.r-stats{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:4px;}
+.r-stat-item{padding:20px 16px;text-align:center;}
+.r-stat-item+.r-stat-item{border-left:1px solid var(--border);}
+.r-stat-label{font-size:calc(12px * var(--fs));color:var(--text-tertiary);margin-bottom:6px;}
+.r-stat-value{font-size:calc(22px * var(--fs));font-weight:800;color:var(--text-primary);}
+.r-explain{font-size:calc(12px * var(--fs));color:var(--text-tertiary);line-height:1.6;padding:8px 4px 0;}
+
+/* Insights */
+.r-insights{display:flex;flex-direction:column;}
+.r-insight{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);font-size:calc(14px * var(--fs));line-height:1.5;color:var(--text-primary);}
+.r-insight:last-child{border-bottom:none;}
+.r-insight-icon{font-size:calc(18px * var(--fs));flex-shrink:0;margin-top:1px;}
+.r-insight-text{flex:1;}
+
+/* Recommend card */
+.r-rec{border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;background:var(--bg);}
+.r-rec-head{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--border);}
+.r-rec-icon{width:40px;height:40px;background:var(--indigo);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.r-rec-name{font-size:calc(16px * var(--fs));font-weight:700;color:var(--text-primary);}
+.r-rec-desc{font-size:calc(12px * var(--fs));color:var(--text-tertiary);margin-top:2px;}
+.r-rec-body{padding:0 18px;}
+.r-rec-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);}
+.r-rec-row:last-child{border-bottom:none;}
+.r-rec-lbl{font-size:calc(13px * var(--fs));color:var(--text-tertiary);}
+.r-rec-val{font-size:calc(14px * var(--fs));font-weight:600;color:var(--text-primary);text-align:right;}
+.r-rec-val.hl{color:var(--blue);font-weight:700;}
+
+/* Process steps */
+.process-steps{display:flex;flex-direction:column;gap:8px;}
+.process-step{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-secondary);border-radius:12px;}
+.process-num{width:24px;height:24px;background:var(--indigo);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.process-text{font-size:calc(13px * var(--fs));color:var(--text-primary);}
+
+/* CTA */
+.r-cta{padding:20px;background:var(--bg-secondary);border-radius:20px;border:1px solid var(--border);}
+.r-cta-notice{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.r-cta-notice-icon{font-size:28px;}
+.r-cta-notice-text{font-size:calc(14px * var(--fs));line-height:1.5;}
+.r-cta-notice-text strong{color:var(--indigo);font-weight:700;}
+
+/* Collapse */
+.collapse-box{border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:10px;}
+.collapse-box summary{padding:16px 20px;font-size:calc(14px * var(--fs));font-weight:600;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;}
+.collapse-box summary::-webkit-details-marker{display:none;}
+.collapse-box summary::after{content:'›';font-size:18px;color:var(--text-tertiary);transition:transform 0.2s;transform:rotate(90deg);}
+.collapse-box[open] summary::after{transform:rotate(270deg);}
+.collapse-box-content{padding:16px 20px;border-top:1px solid var(--border);}
+.input-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.input-summary-cell{padding:10px 12px;background:var(--bg-secondary);border-radius:10px;}
+.input-summary-cell-label{font-size:11px;color:var(--text-tertiary);margin-bottom:2px;}
+.input-summary-cell-value{font-size:13px;font-weight:600;color:var(--text-primary);}
+.r-notice{font-size:calc(12px * var(--fs));color:var(--text-tertiary);text-align:center;padding:16px 0;line-height:1.6;}
+.result-bottom-bar{position:absolute;bottom:0;left:0;right:0;padding:12px 24px calc(16px + var(--safe-bottom));background:var(--bg);border-top:1px solid var(--divider);z-index:10;}
+
+/* Unavailable */
+.unavailable-content{text-align:center;padding:40px 0;}
+.unavailable-icon{font-size:56px;margin-bottom:16px;}
+.unavailable-content h3{font-size:calc(20px * var(--fs));font-weight:700;margin-bottom:12px;color:var(--red);}
+.unavailable-content p{font-size:calc(14px * var(--fs));color:var(--text-secondary);line-height:1.7;white-space:pre-line;}
+
+/* Modals */
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:2000;align-items:flex-end;justify-content:center;}
+.modal-backdrop.show{display:flex;}
+.modal-sheet{background:white;width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:8px 24px calc(24px + var(--safe-bottom));animation:sheetUp 0.3s cubic-bezier(0.22,1,0.36,1);max-height:90vh;overflow-y:auto;}
+@keyframes sheetUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.modal-handle{width:36px;height:4px;background:#DDE1E6;border-radius:2px;margin:8px auto 20px;}
+.modal-title{font-size:20px;font-weight:700;margin-bottom:4px;text-align:center;}
+.modal-desc{font-size:14px;color:var(--text-secondary);text-align:center;margin-bottom:24px;}
+.form-group{margin-bottom:16px;}
+.form-label{font-size:14px;font-weight:600;margin-bottom:8px;display:block;}
+.form-label .required{color:var(--red);}
+.form-input{width:100%;padding:16px;font-size:16px;font-family:inherit;border:1.5px solid var(--border);border-radius:14px;background:var(--bg-card);transition:border-color 0.2s;outline:none;}
+.form-input:focus{border-color:var(--blue);}
+.phone-row{display:flex;gap:8px;}
+.phone-row select{padding:16px 12px;border:1.5px solid var(--border);border-radius:14px;font-size:16px;font-family:inherit;background:var(--bg-card);}
+.phone-row input{flex:1;min-width:0;}
+.agree-row{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--bg-card);border-radius:12px;margin:16px 0;}
+.agree-row input[type="checkbox"]{width:20px;height:20px;accent-color:var(--blue);flex-shrink:0;}
+.agree-row label{font-size:14px;}
+.privacy-link{color:var(--blue);text-decoration:underline;cursor:pointer;}
+.success-content{text-align:center;padding:32px 0;}
+.success-icon{font-size:56px;margin-bottom:16px;}
+.success-content h3{font-size:20px;font-weight:700;margin-bottom:8px;}
+.success-content p{font-size:14px;color:var(--text-secondary);line-height:1.6;}
+.privacy-sheet h4{font-size:15px;font-weight:600;margin:16px 0 8px;}
+.privacy-sheet p,.privacy-sheet ul{font-size:13px;color:var(--text-secondary);line-height:1.6;}
+.privacy-sheet ul{padding-left:18px;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.anim-1{opacity:0;animation:fadeUp 0.6s 0.1s forwards;}
+.anim-2{opacity:0;animation:fadeUp 0.6s 0.3s forwards;}
+.anim-3{opacity:0;animation:fadeUp 0.6s 0.5s forwards;}
+.anim-4{opacity:0;animation:fadeUp 0.6s 0.7s forwards;}
+
+@media(max-width:380px){:root{--t1:20px;--t2:14px;--t3:13px;--t4:12px;--t5:10px;--px:20px;--top:calc(100px + var(--safe-top));}.review-card{width:200px;padding:12px;}.savings-stage{min-height:150px;}.savings-card{padding:12px;}}
+@media(min-width:600px){.modal-backdrop{align-items:center;padding:24px;}.modal-sheet{border-radius:24px;}}
+@media(min-width:900px){body{background:#F4F4F4;}.app{height:90vh;max-height:820px;margin:5vh auto;border-radius:24px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.08);}.result-overlay{border-radius:24px;overflow:hidden;}.pc-footer{display:block;}}
+.pc-footer{display:none;text-align:center;padding:16px 20px 24px;max-width:480px;margin:0 auto;}
+.pc-footer-name{font-size:13px;font-weight:700;color:#8B95A1;margin-bottom:4px;}
+.pc-footer-info{font-size:11px;color:#B0B8C1;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar" id="topbar">
+    <button class="topbar-back" id="backBtn" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <span class="topbar-title" id="topbarTitle">예상탕감률 조회</span>
+    <span class="topbar-step" id="stepText"></span>
+  </div>
+  <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="slides-container" id="slidesContainer"></div>
+  <div class="floating-bar" id="floatingBar" style="display:none;">
+    <button class="btn-primary" id="floatingBtn" disabled>다음</button>
+    <button class="btn-secondary" id="floatingSecBtn" style="display:none;" onclick="openExpertModal()">잘 모르겠어요 · 전문가 상담</button>
+  </div>
+</div>
+<div class="pc-footer">
+  <div class="pc-footer-name">법률사무소 호경</div>
+  <div class="pc-footer-info">법무법인 호경 대표변호사 : 원영재<br>서울특별시 강동구 천호옛길 29 3층 · Business ID : 602-87-03920</div>
+</div>
+
+<!-- Result -->
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-top">
+    <button class="result-close" onclick="closeResult()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    <span class="result-top-title">무료 예상탕감률 조회 결과</span>
+    <div style="width:40px;"></div>
+  </div>
+  <div class="result-scroll"><div class="result-content" id="resultContent"></div></div>
+  <div class="result-bottom-bar">
+    <button class="btn-primary indigo" onclick="openConsultModal()">✅ 채무탕감 무료상담 신청</button>
+    <button class="btn-secondary" onclick="closeResult();resetAll();">처음부터 다시하기</button>
+  </div>
+</div>
+
+<!-- Consult -->
+<div class="modal-backdrop" id="consultModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📞 채무탕감 무료상담 신청</div>
+    <div class="modal-desc">전문 상담사가 빠르게 연락드립니다</div>
+    <form id="consultForm" onsubmit="submitForm(event)">
+      <div class="form-group"><label class="form-label">성함 <span class="required">*</span></label><input type="text" id="clientName" class="form-input" placeholder="성함을 입력해주세요" required></div>
+      <div class="form-group"><label class="form-label">연락처 <span class="required">*</span></label>
+        <div class="phone-row"><select id="phone1"><option value="010">010</option><option value="011">011</option></select><input type="text" id="phone2" class="form-input" maxlength="4" inputmode="numeric" placeholder="0000" required><input type="text" id="phone3" class="form-input" maxlength="4" inputmode="numeric" placeholder="0000" required></div>
+      </div>
+      <div class="agree-row"><input type="checkbox" id="agreePrivacy" required checked><label for="agreePrivacy"><span class="privacy-link" onclick="openPrivacy();event.stopPropagation();">개인정보취급방침</span>에 동의합니다</label></div>
+      <button type="submit" class="btn-primary green" id="submitBtn">채무탕감 상담 신청하기</button>
+    </form>
+  </div>
+</div>
+
+<!-- Expert -->
+<div class="modal-backdrop" id="expertModal">
+  <div class="modal-sheet" style="text-align:center;">
+    <div class="modal-handle"></div>
+    <div style="font-size:56px;margin-bottom:16px;">👨‍💼</div>
+    <div class="modal-title">전문가 상담이 필요하신가요?</div>
+    <div class="modal-desc">입력이 어려우시다면<br>전문 상담사가 도와드릴게요</div>
+    <ul style="list-style:none;padding:16px 20px;background:var(--bg-card);border-radius:14px;margin:16px 0 24px;text-align:left;"><li style="font-size:14px;padding:8px 0;">✅ 무료 상담 (비용 없음)</li><li style="font-size:14px;padding:8px 0;">✅ 1:1 맞춤 분석</li><li style="font-size:14px;padding:8px 0;">✅ 빠른 연락 (당일 상담)</li><li style="font-size:14px;padding:8px 0;">✅ 정확한 탕감 가능성 확인</li></ul>
+    <button class="btn-primary green" onclick="closeModal('expertModal');openConsultModal();">전문가 무료 상담 받기</button>
+    <button class="btn-secondary" onclick="closeModal('expertModal')">계속 직접 입력하기</button>
+  </div>
+</div>
+
+<!-- Privacy -->
+<div class="modal-backdrop" id="privacyModal">
+  <div class="modal-sheet privacy-sheet">
+    <div class="modal-handle"></div>
+    <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">개인정보취급방침</h3>
+    <h4>가. 수집하는 개인정보 항목</h4><p>성명, 연락처, 연령대, 직업, 월소득, 부양가족 수, 주거형태, 채무총액, 채무종류, 채권자수, 연체상태, 채무원인, 보유자산, 자산가치, 압류/추심 여부</p>
+    <h4>나. 수집 및 이용목적</h4><ul><li>채무탕감 가능성 분석 및 상담</li><li>전화 및 문자 상담·안내</li><li>정부지원 채무조정 제도 안내</li></ul>
+    <h4>다. 보유 및 이용기간</h4><p>상담 완료 후 관계 법령 기간 또는 본인 요청 시까지</p>
+    <h4>라. 동의 거부 시</h4><p>필수 정보 동의 거부 시 상담이 제한될 수 있습니다.</p>
+    <button class="btn-primary" style="margin-top:20px;" onclick="closeModal('privacyModal')">확인</button>
+  </div>
+</div>
+
+<!-- Success -->
+<div class="modal-backdrop" id="successModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="success-content"><div class="success-icon">✅</div><h3>상담 신청 완료!</h3><p>전문 상담사가<br>빠른 시간 내 연락드리겠습니다.</p></div>
+    <button class="btn-primary" onclick="closeAllModals()">확인</button>
+  </div>
+</div>
+
+<script>
+const SHEET_URL='https://script.google.com/macros/s/AKfycbwfvxYgAIVoBdcZRevQHX4cGsL8cWnRa9xuBzalac1uY64_dmdLn9ZfZ-CM5dRKydH7/exec';
+let currentStep=0,userData={},analysisResult={},isSubmitting=false,autoTimer=null;
+
+// ===== Tracking System =====
+const TRK={
+  vid: sessionStorage.getItem('vid')||('v_'+Date.now()+'_'+Math.random().toString(36).substr(2,6)),
+  startTime: Date.now(),
+  maxStep: 0,
+  maxStepName: 'intro1',
+  converted: false,
+  referrer: '',
+  utmSource: '',
+  utmMedium: '',
+  utmCampaign: '',
+  utmContent: '',
+  device: /Mobile|Android|iPhone/i.test(navigator.userAgent)?'모바일':'PC',
+  init(){
+    sessionStorage.setItem('vid',this.vid);
+    const u=new URL(location.href);
+    this.utmSource=u.searchParams.get('utm_source')||'';
+    this.utmMedium=u.searchParams.get('utm_medium')||'';
+    this.utmCampaign=u.searchParams.get('utm_campaign')||'';
+    this.utmContent=u.searchParams.get('utm_content')||u.searchParams.get('from')||'';
+    this.referrer=document.referrer||'직접방문';
+    if(!this.utmSource&&this.referrer!=='직접방문'){
+      try{this.utmSource=new URL(this.referrer).hostname;}catch(e){}
+    }
+  },
+  trackStep(idx,name){
+    if(idx>this.maxStep){this.maxStep=idx;this.maxStepName=name;}
+    // Send update every 3 steps for real-time funnel tracking
+    if(idx>0 && idx%3===0) this.sendTraffic();
+  },
+  getStepLabel(idx){
+    const q=questions[idx];if(!q)return'unknown';
+    if(q.type==='intro1')return'인트로1_감정';
+    if(q.type==='intro2')return'인트로2_혜택';
+    if(q.type==='intro3')return'인트로3_후기';
+    if(q.type==='font_size')return'글자크기';
+    if(q.type==='loading')return'분석중';
+    if(q.type==='gate')return'게이트폼';
+    return q.key||'unknown';
+  },
+  getDuration(){return Math.round((Date.now()-this.startTime)/1000);},
+  sendTraffic(){
+    const data=new URLSearchParams();
+    data.append('시트','트래픽');
+    data.append('방문자ID',this.vid);
+    data.append('방문일시',new Date().toLocaleString('ko-KR'));
+    data.append('유입소스',this.utmSource||'직접');
+    data.append('유입매체',this.utmMedium||'-');
+    data.append('유입캠페인',this.utmCampaign||'-');
+    data.append('유입콘텐츠',this.utmContent||'-');
+    data.append('리퍼러',this.referrer);
+    data.append('기기',this.device);
+    data.append('최종단계',this.maxStepName);
+    data.append('최종단계번호',String(this.maxStep));
+    data.append('체류시간_초',String(this.getDuration()));
+    data.append('전환여부',this.converted?'Y':'N');
+    data.append('페이지URL',location.href);
+    // sendBeacon works on page close, fetch for mid-session
+    if(navigator.sendBeacon){
+      navigator.sendBeacon(SHEET_URL,data);
+    }else{
+      fetch(SHEET_URL,{method:'POST',body:data,keepalive:true}).catch(()=>{});
+    }
+  }
+};
+TRK.init();
+// Send traffic immediately on page load
+setTimeout(()=>TRK.sendTraffic(),2000);
+// Update on page leave
+window.addEventListener('beforeunload',()=>TRK.sendTraffic());
+// Also on visibility change (mobile tab switch/close)
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')TRK.sendTraffic();});
+
+(function(){const K='first_referrer';if(!sessionStorage.getItem(K)){const v=TRK.utmSource?`utm: ${TRK.utmSource}`:(TRK.referrer!=='직접방문'?TRK.referrer:'직접 방문');sessionStorage.setItem(K,v);}})();
+
+function getQuestions(){
+  const base=[
+    {key:'intro1',type:'intro1'},
+    {key:'intro2',type:'intro2'},
+    {key:'intro3',type:'intro3'},
+    {key:'font_size',type:'font_size'},
+    {key:'ageGroup',label:'기본 정보',title:'연령대를\n선택해주세요',hint:'연령에 따라 변제기간 단축 등\n특별 혜택이 적용될 수 있습니다',type:'choice',options:['20대','30대','40대','50대','60대 이상']},
+    {key:'job',label:'소득 정보',title:'현재 직업 상태를\n선택해주세요',hint:'소득 유형에 따라\n적합한 채무조정 제도가 달라집니다',type:'choice',options:['직장인 (정규직)','직장인 (계약직/일용직)','자영업자/사업자','프리랜서','아르바이트','휴직/구직 중','무직/주부']},
+    {key:'income',label:'소득 정보',title:'월 평균 실수령액을\n입력해주세요',hint:'실제 통장에 입금되는 금액 기준\n무소득이면 0을 입력해주세요',type:'number',placeholder:'예: 250',tipBox:{title:'💡 실수령액이란?',text:'세금·4대보험을 뺀 실제 입금 금액이에요.<br>급여명세서의 "실지급액"을 참고하세요.'}},
+    {key:'dependents',label:'가족 정보',title:'부양가족 수를\n선택해주세요',hint:'본인 포함\n부양가족이 많을수록 최저생계비가 높게 책정됩니다',type:'choice',options:['1명 (본인만)','2명','3명','4명','5명 이상']},
+    {key:'housing',label:'자산 정보',title:'주거 형태를\n선택해주세요',hint:'',type:'choice',options:['자가 (본인 소유)','전세','월세','무상거주 (부모님 등)']},
+    {key:'totalDebt',label:'채무 정보',title:'총 채무금액을\n입력해주세요',hint:'신용대출 + 카드빚 + 담보대출 등\n모든 빚을 합산한 금액 (만원)',type:'number',placeholder:'예: 8000',tipBox:{title:'💡 총 채무란?',text:'은행대출, 카드빚, 사채 등 모든 빚을 합한 금액이에요.<br>정확하지 않아도 대략적인 금액을 입력해주세요.'}},
+    {key:'debtType',label:'채무 정보',title:'주요 채무 종류를\n선택해주세요',hint:'가장 큰 비중을 차지하는 채무',type:'choice',options:['신용대출 (은행/저축은행)','카드빚 (카드론/현금서비스/리볼빙)','담보대출 (주택/차량)','대부업체 대출','사채/개인 간 차용','보증채무','기타']},
+    {key:'creditorCount',label:'채무 정보',title:'채권자(빚진 곳) 수를\n선택해주세요',hint:'',type:'choice',options:['1~2곳','3~5곳','6~10곳','10곳 이상']},
+    {key:'overdueStatus',label:'연체 정보',title:'현재 연체 상태를\n선택해주세요',hint:'',type:'choice',options:['연체 없음 (정상 상환 중)','연체 30일 미만','연체 31~89일','연체 90일 이상 (3개월↑)','연체 1년 이상']},
+    {key:'debtCause',label:'채무 정보',title:'채무 발생 주요 원인을\n선택해주세요',hint:'',type:'choice',options:['실직/소득 감소','사업 실패/폐업','과도한 의료비','투자 실패 (주식/코인 등)','생활비 부족','타인 보증/사기 피해','기타']},
+    {key:'hasAsset',label:'자산 정보',title:'보유 자산을\n선택해주세요',hint:'복수 해당 시 가장 큰 자산',type:'choice',options:['자산 없음','부동산 (주택/토지)','차량','전세보증금','예금/적금 (500만원↑)','보험해약환급금','퇴직금/퇴직연금']},
+    {key:'assetValue',label:'자산 정보',title:'총 자산 가치를\n입력해주세요',hint:'없으면 0을 입력해주세요 (만원)',type:'number',placeholder:'예: 3000'},
+    {key:'hasCollection',label:'추심 정보',title:'현재 압류/추심을\n받고 계신가요?',hint:'',type:'choice',options:['없음','채권추심 전화/문자만','급여 압류 중','재산(예금/부동산) 압류 중','가압류 진행 중']},
+    {key:'loading',type:'loading'},
+    {key:'gate',type:'gate'}
+  ];
+  return base;
+}
+let questions=getQuestions();
+
+function formatMoney(n){if(!n||n===0)return'0원';if(n>=10000){const a=Math.floor(n/10000),b=n%10000;return b>0?`${a}억 ${b.toLocaleString()}만원`:`${a}억원`;}return`${n.toLocaleString()}만원`;}
+
+// ===== Slide rendering =====
+function renderSlide(idx){
+  const q=questions[idx],s=document.createElement('div');
+  s.className='slide';s.id=`slide-${idx}`;s.dataset.step=idx;
+
+  if(q.type==='intro1'){
+    s.classList.add('intro-slide','intro-slide-1');
+    s.innerHTML=`
+      <div class="s1-wrap anim-1">
+        <h1 class="s1-title">더이상 못갚겠다면<br><em>채무 감당</em>이 어렵다면..</h1>
+        <div class="s1-video anim-2"><video autoplay loop muted playsinline><source src="https://new.recover365.kr/wp-content/uploads/2026/03/불안한_모습_영상_생성.mp4" type="video/mp4"></video></div>
+      </div>
+    `;
+  } else if(q.type==='intro2'){
+    s.classList.add('intro-slide','intro-slide-2-new');
+    s.innerHTML=`
+      <video class="s2-bg-video" autoplay loop muted playsinline><source src="https://new.recover365.kr/wp-content/uploads/2026/03/자신감_넘치는_남성의_회사_출근_영상.mp4" type="video/mp4"></video>
+      <div class="s2-overlay"></div>
+      <div class="s2-wrap">
+        <h1 class="s2-title anim-1">정부지원<br><em>채무탕감</em>제도</h1>
+        <p class="s2-sub anim-1">최대 10억, 90%까지 탕감 가능합니다</p>
+        <div class="benefit-list">
+          <div class="benefit-row anim-2" onclick="openBenefitPopup(0)"><div class="benefit-num">1</div><div class="benefit-body"><div class="benefit-title">2026년 최저생계비 확정</div><div class="benefit-desc">전년보다 최대 24만원 증가, 변제금이 줄어들어요</div></div><div class="benefit-arrow">›</div></div>
+          <div class="benefit-row anim-2" onclick="openBenefitPopup(1)"><div class="benefit-num">2</div><div class="benefit-body"><div class="benefit-title">배우자·가족도 모릅니다</div><div class="benefit-desc">100% 비밀 보관, 취업 영향 없습니다</div></div><div class="benefit-arrow">›</div></div>
+          <div class="benefit-row anim-3" onclick="openBenefitPopup(2)"><div class="benefit-num">3</div><div class="benefit-body"><div class="benefit-title">추심·독촉·압류·사채도 즉시 종료</div><div class="benefit-desc">투잡 쓰리잡을 뛰어도 해결되지 않는 빚</div></div><div class="benefit-arrow">›</div></div>
+          <div class="benefit-row anim-3" onclick="openBenefitPopup(3)"><div class="benefit-num">4</div><div class="benefit-body"><div class="benefit-title">주택·차량 모두 유지 가능</div><div class="benefit-desc">살고 있는 집, 재산을 지키는 탕감</div></div><div class="benefit-arrow">›</div></div>
+          <div class="benefit-row anim-4" onclick="openBenefitPopup(4)"><div class="benefit-num">5</div><div class="benefit-body"><div class="benefit-title">지인 채무가 너무 미안한데 어쩌죠?</div><div class="benefit-desc">원하는 채무만 포함 가능합니다</div></div><div class="benefit-arrow">›</div></div>
+        </div>
+        <div class="s2-stats anim-4">
+          <div class="s2-stat-line">2025년 <strong id="cnt1">0</strong>명이</div>
+          <div class="s2-stat-line">막막한 현실에서 새로운 삶을 찾았습니다</div>
+          <div class="s2-stat-line" style="margin-top:8px;"><strong id="cnt2">0</strong>명이 회복하는 삶을</div>
+          <div class="s2-stat-line">살아가고 있습니다</div>
+        </div>
+      </div>
+    `;
+  } else if(q.type==='intro3'){
+    s.classList.add('intro-slide','intro-slide-3');
+    s.innerHTML=`
+      <div class="s3-wrap">
+        <div class="review-section anim-1"><div class="s3-section-title">실제 이용 후기</div><div class="review-track-wrap"><div class="review-track" id="reviewTrack">
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/42.png" alt=""></div><div class="review-meta"><div class="review-name">김○○님 (40대·직장인)</div><div class="review-tag">카드빚+신용대출 · 1억 2천</div></div></div><div class="rv-body">투잡, 쓰리잡 뛰어봤지만 <strong>현실적으로 갚을 수 없었습니다.</strong> 매달 이자만 나가고..</div><div class="rv-result">→ 개인회생 후 월 45만원으로 절감!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/41.png" alt=""></div><div class="review-meta"><div class="review-name">이○○님 (30대·프리랜서)</div><div class="review-tag">대부업+사채 · 8천만원</div></div></div><div class="rv-body"><strong>독촉 전화 한번에 가슴이 떨렸어요.</strong> 밤잠도 못 자고 매일 불안했습니다.</div><div class="rv-result">→ 3년 만에 빚에서 완전 해방!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/40.png" alt=""></div><div class="review-meta"><div class="review-name">박○○님 (50대·자영업)</div><div class="review-tag">사업실패 · 2억 5천</div></div></div><div class="rv-body">사업 망하고 <strong>가족한테도 말 못했습니다.</strong> 추심 전화에 시달리다 용기내서..</div><div class="rv-result">→ 파산면책으로 빚 전액 탕감!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/36.png" alt=""></div><div class="review-meta"><div class="review-name">정○○님 (30대·직장인)</div><div class="review-tag">코인+카드론 · 9천만원</div></div></div><div class="rv-body">코인에 빠져 빚이 눈덩이처럼. <strong>혼자 해결하려다 더 커졌습니다.</strong></div><div class="rv-result">→ 월 280만원 → 38만원으로 절감!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/37.png" alt=""></div><div class="review-meta"><div class="review-name">최○○님 (40대·일용직)</div><div class="review-tag">생활비 부족 · 6천만원</div></div></div><div class="rv-body">아이 셋 키우면서 <strong>빚이 계속 늘었어요.</strong> 이자때문에 줄지 않고..</div><div class="rv-result">→ 월 납부금 82% 감소!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/38.png" alt=""></div><div class="review-meta"><div class="review-name">한○○님 (30대·직장인)</div><div class="review-tag">카드론+리볼빙 · 7천만원</div></div></div><div class="rv-body">리볼빙이 이렇게 무서운 줄 몰랐어요. <strong>원금은 그대로인데 이자만 쌓이고.</strong></div><div class="rv-result">→ 월 납부금 78% 감소!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/39.png" alt=""></div><div class="review-meta"><div class="review-name">송○○님 (40대·자영업)</div><div class="review-tag">사업자금+보증 · 1억 5천</div></div></div><div class="rv-body">가게 문 닫고 <strong>보증까지 떠안았습니다.</strong> 포기하려던 순간 상담받았어요.</div><div class="rv-result">→ 파산면책으로 새출발!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/42.png" alt=""></div><div class="review-meta"><div class="review-name">김○○님 (40대·직장인)</div><div class="review-tag">카드빚+신용대출 · 1억 2천</div></div></div><div class="rv-body">투잡, 쓰리잡 뛰어봤지만 <strong>현실적으로 갚을 수 없었습니다.</strong></div><div class="rv-result">→ 개인회생 후 월 45만원으로 절감!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/41.png" alt=""></div><div class="review-meta"><div class="review-name">이○○님 (30대·프리랜서)</div><div class="review-tag">대부업+사채 · 8천만원</div></div></div><div class="rv-body"><strong>독촉 전화 한번에 가슴이 떨렸어요.</strong></div><div class="rv-result">→ 3년 만에 빚에서 완전 해방!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/40.png" alt=""></div><div class="review-meta"><div class="review-name">박○○님 (50대·자영업)</div><div class="review-tag">사업실패 · 2억 5천</div></div></div><div class="rv-body">사업 망하고 <strong>가족한테도 말 못했습니다.</strong></div><div class="rv-result">→ 파산면책으로 빚 전액 탕감!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/36.png" alt=""></div><div class="review-meta"><div class="review-name">정○○님 (30대·직장인)</div><div class="review-tag">코인+카드론 · 9천만원</div></div></div><div class="rv-body">코인에 빠져 빚이 눈덩이처럼. <strong>혼자 해결하려다 더 커졌습니다.</strong></div><div class="rv-result">→ 월 280만원 → 38만원으로 절감!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/37.png" alt=""></div><div class="review-meta"><div class="review-name">최○○님 (40대·일용직)</div><div class="review-tag">생활비 부족 · 6천만원</div></div></div><div class="rv-body">아이 셋 키우면서 <strong>빚이 계속 늘었어요.</strong></div><div class="rv-result">→ 월 납부금 82% 감소!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/38.png" alt=""></div><div class="review-meta"><div class="review-name">한○○님 (30대·직장인)</div><div class="review-tag">카드론+리볼빙 · 7천만원</div></div></div><div class="rv-body">리볼빙이 이렇게 무서운 줄 몰랐어요. <strong>원금은 그대로인데 이자만.</strong></div><div class="rv-result">→ 월 납부금 78% 감소!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/39.png" alt=""></div><div class="review-meta"><div class="review-name">송○○님 (40대·자영업)</div><div class="review-tag">사업자금+보증 · 1억 5천</div></div></div><div class="rv-body">가게 문 닫고 <strong>보증까지 떠안았습니다.</strong></div><div class="rv-result">→ 파산면책으로 새출발!</div></div>
+        </div></div></div>
+        <div class="savings-section anim-2"><div class="s3-section-title" style="padding:0;">월 납부금 변화</div><div class="savings-stage" id="savingsStage"><div class="savings-card"><div class="sv-header"><div class="sv-avatar" id="svAvatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/42.png" alt=""></div><div class="sv-info"><div class="sv-name" id="svName">김○○님</div><div class="sv-desc" id="svDesc">40대 · 직장인 · 카드빚+신용대출</div></div><div class="sv-badge" id="svBadge">-84%</div></div><div class="sv-amounts"><div class="sv-amt-box before"><div class="sv-amt-label">변제 전</div><div class="sv-amt-value" id="svBefore">285만원</div></div><div class="sv-amt-arrow">→</div><div class="sv-amt-box after"><div class="sv-amt-label">변제 후</div><div class="sv-amt-value" id="svAfter">45만원</div></div></div><div class="sv-progress"><div class="sv-progress-fill" id="svProgress"></div></div><div class="sv-progress-text"><span>절감액</span><strong id="svSaved">월 240만원 절감</strong></div></div></div><div class="savings-dots" id="savingsDots"></div></div>
+        <div class="s3-cta-text anim-3"><p>얼마나 변제될 수 있을까? 과연 대상에 포함될까?<br>기간·비용은 얼마나 들까?<br><strong>혼자 끙끙 앓는다고 해결될 문제가 아닙니다.</strong><br>개인회생 심층 진단, 무료분석으로 시작해보세요.</p></div>
+      </div>
+    `;
+  } else if(q.type==='font_size'){
+    s.classList.add('fontsize-slide');
+    const sizes=[{label:'기본',sample:'이 크기로 볼게요',fs:1,px:'15px'},{label:'조금 크게',sample:'이 크기가 편해요',fs:1.15,px:'17px'},{label:'크게',sample:'이 크기가 좋아요',fs:1.3,px:'20px'},{label:'아주 크게',sample:'이 크기로 할래요',fs:1.45,px:'22px'},{label:'최대',sample:'가장 큰 글씨',fs:1.6,px:'24px'}];
+    s.innerHTML=`<div class="fontsize-content"><div class="fontsize-emoji">👀</div><div class="fontsize-title">잠깐!</div><div class="fontsize-sub">글씨는 어떤 크기가 좋으세요?</div><div class="fontsize-options">${sizes.map((sz,i)=>`<button class="fontsize-btn${i===0?' selected':''}" data-fs="${sz.fs}" onclick="selectFontSize(this,${sz.fs})"><div><div class="fs-label" style="font-size:${sz.px};">${sz.label}</div><div class="fs-sample" style="font-size:${sz.px};">${sz.sample}</div></div><div class="fs-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div></button>`).join('')}</div></div>`;
+  } else if(q.type==='loading'){
+    s.classList.add('loading-slide');
+    s.innerHTML=`<div class="loading-content"><div class="loading-ring"></div><div class="loading-title">AI 채무탕감 분석 중</div><div class="loading-desc">입력하신 정보를 바탕으로<br>맞춤 결과를 계산하고 있어요</div><div class="loading-steps"><div class="loading-step" id="ls1"><span class="loading-step-icon">📊</span><span>채무·소득 정보 분석</span></div><div class="loading-step" id="ls2"><span class="loading-step-icon">⚖️</span><span>적합 채무구제 제도 매칭</span></div><div class="loading-step" id="ls3"><span class="loading-step-icon">💰</span><span>예상 탕감금액 계산</span></div><div class="loading-step" id="ls4"><span class="loading-step-icon">✅</span><span>결과 정리</span></div></div></div>`;
+  } else if(q.type==='gate'){
+    s.classList.add('gate-slide');
+    s.innerHTML=`
+      <div class="gate-content">
+        <div class="gate-badge">✅ AI 분석 완료</div>
+        <h2 class="gate-title">결과 확인을 위해<br>연락처를 남겨주세요</h2>
+        <p class="gate-desc">전문 상담사가 무료로 정확한<br>탕감 가능 여부를 안내드립니다.</p>
+        <div class="gate-form-group">
+          <label class="gate-form-label">성함 <span class="req">*</span></label>
+          <input type="text" id="gateName" class="gate-input" placeholder="성함을 입력해주세요">
+        </div>
+        <div class="gate-form-group">
+          <label class="gate-form-label">연락처 <span class="req">*</span></label>
+          <div class="gate-phone-row">
+            <select id="gatePhone1"><option value="010">010</option><option value="011">011</option></select>
+            <input type="text" id="gatePhone2" class="gate-input" maxlength="4" inputmode="numeric" placeholder="0000">
+            <input type="text" id="gatePhone3" class="gate-input" maxlength="4" inputmode="numeric" placeholder="0000">
+          </div>
+        </div>
+        <div class="gate-agree">
+          <input type="checkbox" id="gateAgree" checked>
+          <label for="gateAgree"><span class="privacy-link" onclick="openPrivacy();event.stopPropagation();">개인정보취급방침</span>에 동의합니다</label>
+        </div>
+        <div class="gate-skip" onclick="showResultScreen()">건너뛰고 결과만 보기</div>
+      </div>
+    `;
+  } else if(q.type==='choice'){
+    s.classList.add('question-slide');
+    const tipHtml=q.tipBox?`<div class="tip-box"><div class="tip-box-title">${q.tipBox.title}</div><div class="tip-box-text">${q.tipBox.text}</div></div>`:'';
+    s.innerHTML=`<div class="question-content"><div class="question-label">${q.label}</div><h2 class="question-title">${q.title}</h2>${q.hint?`<p class="question-hint">${q.hint}</p>`:'<div style="height:20px;"></div>'}<div class="choices">${q.options.map(o=>`<button class="choice-item" onclick="selectChoice(this,'${o.replace(/'/g,"\\'")}')"><span>${o}</span><div class="ck"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div></button>`).join('')}</div>${tipHtml}</div>`;
+  } else if(q.type==='text'||q.type==='number'){
+    s.classList.add('question-slide');
+    const tipHtml=q.tipBox?`<div class="tip-box"><div class="tip-box-title">${q.tipBox.title}</div><div class="tip-box-text">${q.tipBox.text}</div></div>`:'';
+    s.innerHTML=`<div class="question-content"><div class="question-label">${q.label}</div><h2 class="question-title">${q.title}</h2>${q.hint?`<p class="question-hint">${q.hint}</p>`:'<div style="height:20px;"></div>'}<div class="number-input-wrapper"><input type="text" class="number-input" id="numInput-${idx}" inputmode="${q.type==='number'?'numeric':'text'}" placeholder="${q.placeholder||''}" autocomplete="off"><div class="number-unit" id="numUnit-${idx}"></div></div>${tipHtml}</div>`;
+  }
+  document.getElementById('slidesContainer').appendChild(s);
+  return s;
+}
+
+function showSlide(idx,dir='forward'){
+  if(autoTimer){clearInterval(autoTimer);autoTimer=null;}
+  if(svCycleTimer){clearInterval(svCycleTimer);svCycleTimer=null;}
+  // Track step
+  TRK.trackStep(idx,TRK.getStepLabel(idx));
+  const prev=document.querySelector('.slide.active');
+  if(prev){prev.classList.remove('active');prev.classList.add(dir==='forward'?'exit-left':'exit-right');setTimeout(()=>{if(prev.parentNode)prev.remove();},500);}
+  let slide=document.getElementById(`slide-${idx}`);
+  if(!slide)slide=renderSlide(idx);
+  else{slide.classList.remove('exit-left','exit-right');slide.style.transform=dir==='forward'?'translateX(80px)':'translateX(-80px)';slide.style.opacity='0';}
+  requestAnimationFrame(()=>{requestAnimationFrame(()=>{slide.classList.add('active');slide.style.transform='';slide.style.opacity='';});});
+
+  const q=questions[idx];
+  const topbar=document.getElementById('topbar'),backBtn=document.getElementById('backBtn'),stepText=document.getElementById('stepText'),progressBar=document.getElementById('progressBar'),topTitle=document.getElementById('topbarTitle'),floatingBar=document.getElementById('floatingBar'),floatingBtn=document.getElementById('floatingBtn'),floatingSecBtn=document.getElementById('floatingSecBtn');
+
+  const isIntro=q.type==='intro1'||q.type==='intro2'||q.type==='intro3'||q.type==='font_size'||q.type==='gate';
+  const isLoading=q.type==='loading';
+  topbar.className=`topbar${!isIntro&&!isLoading?' solid':''}`;  topTitle.classList.toggle('visible',!isIntro&&!isLoading);
+  backBtn.classList.toggle('visible',idx>0&&!isLoading&&q.type!=='font_size');
+
+  const totalQ=questions.length-5;const qIdx=idx-4;
+  if(!isIntro&&!isLoading&&qIdx>0){stepText.classList.remove('visible');progressBar.classList.add('visible');document.getElementById('progressFill').style.width=`${(qIdx/totalQ)*100}%`;}
+  else{stepText.classList.remove('visible');progressBar.classList.remove('visible');}
+
+  if(q.type==='intro1'){
+    floatingBar.style.display='none';
+    floatingBar.classList.remove('dark-mode');
+    autoTimer=setTimeout(()=>advance(),3000);
+  } else if(q.type==='intro2'){
+    floatingBar.style.display='block';floatingBtn.textContent='다음';floatingBtn.disabled=false;floatingBtn.className='btn-primary';floatingBtn.style.display='';floatingBtn.onclick=()=>advance();floatingSecBtn.style.display='none';
+    floatingBar.classList.add('dark-mode');
+    setTimeout(()=>{animateCounter('cnt1',0,123000,2500,'');animateCounter('cnt2',0,180000,2500,'');},600);
+  } else if(q.type==='intro3'){
+    floatingBar.style.display='block';floatingBtn.textContent='개인회생 무료분석 시작하기';floatingBtn.disabled=false;floatingBtn.className='btn-primary indigo bounce';floatingBtn.onclick=()=>advance();floatingSecBtn.style.display='none';
+    floatingBar.classList.remove('dark-mode');
+    setTimeout(()=>startSavingsCycle(),600);
+  } else if(q.type==='font_size'){
+    floatingBar.style.display='block';floatingBtn.textContent='이 크기로 시작할게요';floatingBtn.disabled=false;floatingBtn.className='btn-primary';floatingBtn.style.display='';floatingBtn.onclick=()=>advance();floatingSecBtn.style.display='none';
+  } else if(q.type==='choice'){
+    floatingBar.style.display='block';floatingBtn.style.display='none';floatingSecBtn.style.display='block';
+  } else if(q.type==='text'||q.type==='number'){
+    floatingBar.style.display='block';floatingBtn.style.display='';floatingBtn.textContent='다음';floatingBtn.disabled=true;floatingBtn.className='btn-primary';floatingBtn.onclick=()=>submitInput(idx);floatingSecBtn.style.display='block';
+    setTimeout(()=>{
+      const inp=document.getElementById(`numInput-${idx}`);
+      if(inp){inp.focus();inp.addEventListener('input',function(){let raw=this.value;if(q.type==='number'){raw=raw.replace(/[^0-9]/g,'');if(raw)this.value=parseInt(raw).toLocaleString();else this.value='';}floatingBtn.disabled=!this.value.trim();const u=document.getElementById(`numUnit-${idx}`);if(q.type==='number'&&raw&&parseInt(raw)>0&&['totalDebt','assetValue','income'].includes(q.key)){u.innerHTML=`= <strong>${formatMoney(parseInt(raw))}</strong>`;}else{u.innerHTML='';}});inp.addEventListener('keydown',function(e){if(e.key==='Enter'&&this.value.trim())submitInput(idx);});}
+    },400);
+  } else if(q.type==='loading'){
+    floatingBar.style.display='none';runLoading();
+  } else if(q.type==='gate'){
+    floatingBar.style.display='block';floatingBtn.textContent='결과 확인하기';floatingBtn.disabled=false;floatingBtn.className='btn-primary indigo';floatingBtn.style.display='';
+    floatingBtn.onclick=()=>submitGateAndShowResult();
+    floatingSecBtn.style.display='none';
+    setTimeout(()=>{
+      ['gatePhone2','gatePhone3'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('input',function(){this.value=this.value.replace(/[^0-9]/g,'');});});
+    },300);
+  }
+}
+
+function animateCounter(id,start,end,duration,suffix){const el=document.getElementById(id);if(!el)return;const t0=performance.now();function tick(now){const p=Math.min((now-t0)/duration,1);const e=1-Math.pow(1-p,3);const c=start+(end-start)*e;el.textContent=Math.round(c).toLocaleString()+suffix;if(p<1)requestAnimationFrame(tick);}requestAnimationFrame(tick);}
+
+// Savings cycling card
+let svCycleTimer=null;
+const svData=[
+  {name:'김○○님',desc:'40대 · 직장인 · 카드빚+신용대출',img:'https://new.recover365.kr/wp-content/uploads/2026/03/42.png',before:'285만원',after:'45만원',pct:'-84%',saved:'월 240만원 절감',prog:84},
+  {name:'이○○님',desc:'30대 · 프리랜서 · 대부업+사채',img:'https://new.recover365.kr/wp-content/uploads/2026/03/41.png',before:'230만원',after:'32만원',pct:'-86%',saved:'월 198만원 절감',prog:86},
+  {name:'박○○님',desc:'50대 · 자영업 · 사업실패',img:'https://new.recover365.kr/wp-content/uploads/2026/03/40.png',before:'350만원',after:'0원',pct:'-100%',saved:'파산면책 · 전액 탕감',prog:100},
+  {name:'정○○님',desc:'30대 · 직장인 · 코인+카드론',img:'https://new.recover365.kr/wp-content/uploads/2026/03/36.png',before:'280만원',after:'38만원',pct:'-86%',saved:'월 242만원 절감',prog:86},
+  {name:'최○○님',desc:'40대 · 일용직 · 생활비 부족',img:'https://new.recover365.kr/wp-content/uploads/2026/03/37.png',before:'162만원',after:'30만원',pct:'-82%',saved:'월 132만원 절감',prog:82},
+];
+function startSavingsCycle(){
+  if(svCycleTimer){clearInterval(svCycleTimer);svCycleTimer=null;}
+  const dotsEl=document.getElementById('savingsDots');
+  if(dotsEl)dotsEl.innerHTML=svData.map((_,i)=>`<div class="savings-dot${i===0?' active':''}" data-i="${i}"></div>`).join('');
+  let cur=0;
+  showSavingsCard(cur,true);
+  svCycleTimer=setInterval(()=>{cur=(cur+1)%svData.length;showSavingsCard(cur,false);},3500);
+}
+function showSavingsCard(idx,first){
+  const d=svData[idx];
+  const card=document.querySelector('#savingsStage .savings-card');if(!card)return;
+  if(!first){
+    card.classList.remove('active');card.classList.add('exit-up');
+  }
+  const doUpdate=()=>{
+    const avatarEl=document.getElementById('svAvatar');
+    if(avatarEl)avatarEl.innerHTML=`<img src="${d.img}" alt="">`;
+    document.getElementById('svName').textContent=d.name;
+    document.getElementById('svDesc').textContent=d.desc;
+    document.getElementById('svBadge').textContent=d.pct;
+    document.getElementById('svBefore').textContent=d.before;
+    document.getElementById('svAfter').textContent=d.after;
+    document.getElementById('svSaved').textContent=d.saved;
+    const prog=document.getElementById('svProgress');
+    if(prog){prog.style.transition='none';prog.style.width='0%';}
+    card.classList.remove('exit-up');
+    void card.offsetWidth;
+    card.classList.add('active');
+    setTimeout(()=>{if(prog){prog.style.transition='width 1.2s cubic-bezier(0.22,1,0.36,1)';prog.style.width=d.prog+'%';}},80);
+  };
+  if(first)doUpdate();else setTimeout(doUpdate,350);
+  document.querySelectorAll('.savings-dot').forEach((dot,i)=>{dot.classList.toggle('active',i===idx);});
+}
+
+function selectFontSize(btn,fs){btn.closest('.fontsize-options').querySelectorAll('.fontsize-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');document.documentElement.style.setProperty('--fs',fs);}
+
+function selectChoice(btn,val){
+  btn.closest('.slide').querySelectorAll('.choice-item').forEach(b=>{b.classList.remove('selected');b.disabled=true;});
+  btn.classList.add('selected');
+  userData[questions[currentStep].key]=val;
+  setTimeout(()=>advance(),280);
+}
+
+function submitInput(idx){
+  const q=questions[idx],inp=document.getElementById(`numInput-${idx}`);if(!inp||!inp.value.trim())return;
+  let val=inp.value.trim();if(q.type==='number')val=val.replace(/,/g,'');
+  userData[q.key]=q.type==='number'?parseInt(val)||0:val;
+  advance();
+}
+
+function advance(){currentStep++;showSlide(currentStep,'forward');}
+function goBack(){if(currentStep<=0)return;const q=questions[currentStep];if(q.key&&!q.key.startsWith('intro'))delete userData[q.key];currentStep--;showSlide(currentStep,'back');}
+
+function runLoading(){
+  ['ls1','ls2','ls3','ls4'].forEach((id,i)=>{setTimeout(()=>{const e=document.getElementById(id);if(e)e.classList.add('visible');},300+i*550);setTimeout(()=>{const e=document.getElementById(id);if(e)e.classList.add('done');},650+i*550);});
+  setTimeout(()=>{analysisResult=analyze(userData);advance();},3200);
+}
+
+let touchStartX=0;
+document.addEventListener('touchstart',function(e){touchStartX=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',function(e){const diff=touchStartX-e.changedTouches[0].clientX;if(diff>60&&(questions[currentStep].type==='intro1'||questions[currentStep].type==='intro2'||questions[currentStep].type==='intro3'))advance();},{passive:true});
+
+// ===== Analysis Engine =====
+function analyze(d){
+  const income=parseInt(d.income)||0;const totalDebt=parseInt(d.totalDebt)||0;const assetValue=parseInt(d.assetValue)||0;
+  const dependentCount=parseInt(d.dependents)||1;
+  const minLivingCosts={1:120,2:195,3:250,4:305,5:355};
+  const minLiving=minLivingCosts[Math.min(dependentCount,5)]||120;
+  const disposableIncome=Math.max(income-minLiving,0);
+  const annualIncome=income*12;const debtRatio=annualIncome>0?totalDebt/annualIncome:999;
+  const isYouth=d.ageGroup==='20대',isSenior=d.ageGroup==='60대 이상';
+  const overdue=d.overdueStatus;const hasCollection=d.hasCollection;
+
+  if(totalDebt<300)return{available:false,reason:'총 채무가 300만원 미만입니다.\n\n채무조정 제도는 일정 규모 이상의\n채무를 가진 분들을 위한 제도입니다.'};
+
+  let reliefRate=0,program='',programDesc='',monthlyPayment=0,period=0,insights=[],processSteps=[],estimatedCost={court:'',lawyer:''};
+
+  // Case 1: 무소득/무자력
+  if(income===0||(d.job==='무직/주부'&&disposableIncome<=0)){
+    reliefRate=100;program='개인파산·면책';programDesc='변제능력이 없는 경우 채무 전액을 면책받을 수 있습니다.';monthlyPayment=0;period=0;estimatedCost={court:'30~50만원',lawyer:'약 200만원'};
+    insights.push({icon:'⚠️',text:'현재 소득이 없어 개인파산 검토 대상입니다'});insights.push({icon:'✅',text:'파산 면책 시 모든 채무가 법적으로 소멸합니다'});
+    if(isSenior)insights.push({icon:'👴',text:'60대 이상 고령자는 면책 승인율이 높습니다'});
+    processSteps=['법원에 파산·면책 신청서 제출','파산선고 결정 (약 1~2개월)','면책심문기일 (약 2~3개월)','면책결정 확정 → 채무 전액 탕감'];
+  }
+  // Case 2: 채무비율 극히 높음
+  else if(debtRatio>20||disposableIncome<30){
+    reliefRate=100;program='개인파산·면책';programDesc='채무 대비 상환능력이 현저히 부족하여 파산이 적합합니다.';monthlyPayment=0;period=0;estimatedCost={court:'30~50만원',lawyer:'약 200만원'};
+    insights.push({icon:'📊',text:`채무비율 ${debtRatio.toFixed(1)}배로 상환이 사실상 불가능합니다`});insights.push({icon:'✅',text:'개인파산으로 경제적 새출발이 가능합니다'});
+    processSteps=['법원에 파산·면책 신청서 제출','파산선고 결정','면책심문기일','면책결정 확정'];
+  }
+  // Case 3: 고 채무비율 - 개인회생
+  else if(debtRatio>5){
+    reliefRate=Math.min(95,90+Math.floor(debtRatio*0.3));program='개인회생';programDesc='3~5년간 일정금액 변제 후 나머지 채무를 탕감받습니다.';
+    period=(isYouth&&income<200||isSenior||income<200)?36:60;
+    const totalPayment=totalDebt*(1-reliefRate/100);monthlyPayment=Math.round(totalPayment/period);estimatedCost={court:'10~20만원',lawyer:'100~300만원'};
+    insights.push({icon:'📈',text:`채무비율 ${debtRatio.toFixed(1)}배 - 고탕감률 적용 대상`});
+    if(isYouth)insights.push({icon:'👨‍🎓',text:'30세 미만 청년 특례로 변제기간 3년 미만 가능'});
+    processSteps=['법원에 개인회생 신청','개시결정 (추심 즉시 중단)','변제계획안 제출 및 인가',`${Math.round(period/12)}년간 월 ${monthlyPayment.toLocaleString()}만원 변제`,'잔여채무 면책'];
+  }
+  // Case 4: 중간 채무비율 - 개인회생
+  else if(debtRatio>2){
+    reliefRate=Math.min(95,75+Math.floor(debtRatio*4));program='개인회생';programDesc='정기적 소득으로 채무를 조정하여 변제합니다.';
+    period=(isYouth||isSenior||income<200)?36:60;
+    const totalPayment=totalDebt*(1-reliefRate/100);monthlyPayment=Math.round(totalPayment/period);estimatedCost={court:'10~20만원',lawyer:'100~300만원'};
+    insights.push({icon:'📊',text:`채무비율 ${debtRatio.toFixed(1)}배 - 개인회생 적합`});
+    if(d.job==='직장인 (정규직)')insights.push({icon:'💼',text:'정기 급여소득자로 회생 인가율이 높습니다'});
+    processSteps=['법원에 개인회생 신청','개시결정 (추심 즉시 중단)','변제계획안 제출 및 인가',`${Math.round(period/12)}년간 월 ${monthlyPayment.toLocaleString()}만원 변제`,'잔여채무 면책'];
+  }
+  // Case 5: 낮은 채무비율 - 채무조정
+  else{
+    reliefRate=Math.min(90,60+Math.floor(debtRatio*15));
+    if(overdue==='연체 없음 (정상 상환 중)'||overdue==='연체 30일 미만'){program='신속채무조정';programDesc='연체 전 선제적으로 이자를 낮추고 상환기간을 조정합니다.';period=120;insights.push({icon:'⚡',text:'연체 전 신청으로 신용등급 하락을 방지할 수 있습니다'});}
+    else if(overdue==='연체 31~89일'){program='프리워크아웃 (사전채무조정)';programDesc='연체 초기 단계에서 채무를 조정합니다.';period=96;reliefRate=Math.min(92,reliefRate+5);}
+    else{program='개인워크아웃';programDesc='신용회복위원회를 통해 이자 전액 감면 및 원금 탕감이 가능합니다.';period=96;reliefRate=Math.min(95,reliefRate+8);insights.push({icon:'💡',text:'90일 이상 연체자는 원금 최대 95%까지 감면 가능'});}
+    const totalPayment=totalDebt*(1-reliefRate/100);monthlyPayment=Math.round(totalPayment/period);estimatedCost={court:'없음',lawyer:'없음 (무료 상담)'};
+    processSteps=['신용회복위원회 상담 신청','채무조정 심의 (채권자 협의회)','조정안 확정',`최대 ${Math.round(period/12)}년간 분할상환`];
+  }
+
+  if(d.debtCause==='실직/소득 감소')insights.push({icon:'📉',text:'실직으로 인한 채무는 면책 사유로 인정받기 쉽습니다'});
+  if(d.debtCause==='사업 실패/폐업')insights.push({icon:'🏪',text:'사업실패는 파산원인의 44%를 차지합니다'});
+  if(hasCollection==='급여 압류 중')insights.push({icon:'🚨',text:'개인회생 신청 시 급여 압류가 즉시 중단됩니다'});
+  if(d.hasAsset==='차량'&&program.includes('회생'))insights.push({icon:'🚗',text:'생계용 차량(1,500만원 이하)은 회생 시 보전 가능'});
+  if(d.creditorCount==='10곳 이상')insights.push({icon:'📋',text:'다수 채권자 채무는 개인회생으로 일괄 정리가 효과적'});
+
+  const reliefAmount=Math.round(totalDebt*reliefRate/100);const afterDebt=totalDebt-reliefAmount;
+  return{available:true,reliefAmount,reliefRate,beforeDebt:totalDebt,afterDebt,program,programDesc,monthlyPayment,period,insights:insights.slice(0,5),processSteps,estimatedCost};
+}
+
+// ===== Result Screen =====
+function showResultScreen(){
+  const r=analysisResult,rc=document.getElementById('resultContent');
+  if(!r.available){
+    rc.innerHTML=`<div class="unavailable-content"><div class="unavailable-icon">📋</div><h3>현재 채무조정 대상이 아닙니다</h3><p>${r.reason}</p></div><div id="unavailHope" style="opacity:0;transform:translateY(16px);transition:all 0.6s cubic-bezier(0.22,1,0.36,1);"><div style="text-align:center;padding:24px 20px;margin-top:16px;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border-radius:16px;border:1.5px solid #A5B4FC;"><div style="font-size:32px;margin-bottom:12px;">💪</div><div style="font-size:18px;font-weight:700;color:#4338CA;margin-bottom:8px;line-height:1.5;">꼭 필요하다면 전문가의<br>도움을 받아보세요!</div><div style="font-size:15px;font-weight:600;color:#6366F1;">아직 포기하긴 이릅니다!</div><button class="btn-primary indigo" style="margin-top:16px;" onclick="openConsultModal()">📞 전문가 무료상담 받기</button></div></div>`;
+    setTimeout(()=>{const el=document.getElementById('unavailHope');if(el){el.style.opacity='1';el.style.transform='translateY(0)';}},3000);
+  } else {
+    let gaugeExp='';const prob=r.reliefRate;
+    if(prob>=90)gaugeExp='채무 대비 소득·자산 상태를 종합한 결과, 채무탕감 가능성이 매우 높습니다.';
+    else if(prob>=70)gaugeExp='전반적으로 양호한 조건이며, 전문가 상담을 통해 최적의 제도를 확인하세요.';
+    else gaugeExp='일부 조건을 개선하면 더 유리한 탕감을 받을 수 있습니다.';
+
+    const insHtml=r.insights.map(i=>`<div class="r-insight"><span class="r-insight-icon">${i.icon}</span><div class="r-insight-text">${i.text}</div></div>`).join('');
+    const processHtml=r.processSteps.map((s,i)=>`<div class="process-step"><div class="process-num">${i+1}</div><div class="process-text">${s}</div></div>`).join('');
+
+    const summaryPairs=[['연령대',userData.ageGroup||'-'],['직업',userData.job||'-'],['월소득',userData.income?formatMoney(parseInt(userData.income)):'0원'],['부양가족',userData.dependents||'-'],['주거형태',userData.housing||'-'],['총채무',formatMoney(parseInt(userData.totalDebt)||0)],['채무종류',userData.debtType||'-'],['채권자수',userData.creditorCount||'-'],['연체상태',userData.overdueStatus||'-'],['채무원인',userData.debtCause||'-'],['보유자산',userData.hasAsset||'-'],['자산가치',formatMoney(parseInt(userData.assetValue)||0)],['압류/추심',userData.hasCollection||'-']];
+    const summaryHtml=summaryPairs.map(([l,v])=>`<div class="input-summary-cell"><div class="input-summary-cell-label">${l}</div><div class="input-summary-cell-value">${v}</div></div>`).join('');
+
+    rc.innerHTML=`
+      <div class="prob-hero-section">
+        <div class="prob-confetti-wrap"><div class="confetti c1"></div><div class="confetti c2"></div><div class="confetti c3"></div><div class="confetti c4"></div><div class="confetti c5"></div><div class="confetti c6"></div><div class="confetti c7"></div><div class="confetti c8"></div><div class="confetti c9"></div><div class="confetti c10"></div><div class="confetti c11"></div><div class="confetti c12"></div></div>
+        <div class="prob-hero">
+          <span class="prob-hero-badge">🤖 AI 채무탕감 분석 완료</span>
+          <div class="prob-hero-label">예상 탕감률</div>
+          <div class="prob-hero-num"><span class="prob-hero-value" id="probCounter" data-val="${r.reliefRate}">0</span><span class="prob-hero-unit">%</span></div>
+          <div class="prob-hero-bar"><div class="prob-hero-bar-fill" id="probBar"></div></div>
+          <div class="prob-hero-status">${r.reliefRate>=90?'🎉 탕감 가능성 매우 높음':r.reliefRate>=70?'👍 탕감 가능성 양호':'📊 조건 확인 필요'}</div>
+          <p class="prob-hero-desc">${gaugeExp}</p>
+        </div>
+      </div>
+
+      <div class="r-section">
+        <div class="r-section-title"><span class="ico">💰</span> 예상 탕감금액</div>
+        <div class="relief-box"><div class="label">예상 탕감금액</div><div class="amount">${formatMoney(r.reliefAmount)}</div><div class="rate">탕감률 약 ${r.reliefRate}%</div></div>
+        <div class="compare-box"><div class="compare-item before"><div class="clabel">현재 채무</div><div class="cval">${formatMoney(r.beforeDebt)}</div></div><div class="compare-arrow">→</div><div class="compare-item after"><div class="clabel">탕감 후</div><div class="cval">${formatMoney(r.afterDebt)}</div></div></div>
+        ${r.monthlyPayment>0?`<div class="monthly-box"><div class="mlabel">예상 월 변제금</div><div class="mval">약 ${r.monthlyPayment.toLocaleString()}<span>만원</span></div><div class="mperiod">${r.period}개월 (${Math.round(r.period/12)}년)</div></div>`:`<div class="monthly-box" style="background:linear-gradient(135deg,#D1FAE5,#A7F3D0);border-color:#34D399;"><div class="mlabel" style="color:#065F46;">월 변제금</div><div class="mval" style="color:#065F46;">면제</div><div class="mperiod" style="color:#047857;">파산면책 시 변제 의무 없음</div></div>`}
+      </div>
+
+      <div class="r-section">
+        <div class="r-section-title"><span class="ico">📌</span> 추천 제도</div>
+        <div class="r-rec"><div class="r-rec-head"><div class="r-rec-icon">⚖️</div><div><div class="r-rec-name">${r.program}</div><div class="r-rec-desc">${r.programDesc}</div></div></div><div class="r-rec-body"><div class="r-rec-row"><span class="r-rec-lbl">예상 탕감률</span><span class="r-rec-val hl">${r.reliefRate}%</span></div><div class="r-rec-row"><span class="r-rec-lbl">탕감금액</span><span class="r-rec-val">${formatMoney(r.reliefAmount)}</span></div><div class="r-rec-row"><span class="r-rec-lbl">변제기간</span><span class="r-rec-val">${r.period>0?Math.round(r.period/12)+'년':'없음'}</span></div><div class="r-rec-row"><span class="r-rec-lbl">월변제금</span><span class="r-rec-val">${r.monthlyPayment>0?`약 ${r.monthlyPayment.toLocaleString()}만원`:'면제'}</span></div></div></div>
+      </div>
+
+      <div class="r-section">
+        <div class="r-section-title"><span class="ico">✨</span> AI 분석 인사이트</div>
+        <div class="r-insights">${insHtml}</div>
+      </div>
+
+      <div class="r-section">
+        <div class="r-section-title"><span class="ico">📋</span> 진행 절차</div>
+        <div class="process-steps">${processHtml}</div>
+      </div>
+
+      <div class="r-section">
+        <details class="collapse-box"><summary>💰 예상 비용</summary><div class="collapse-box-content"><div style="display:flex;flex-direction:column;gap:8px;"><div style="display:flex;justify-content:space-between;padding:8px;background:var(--bg-secondary);border-radius:8px;"><span style="font-size:13px;color:var(--text-tertiary);">법원 비용</span><span style="font-size:13px;font-weight:600;">${r.estimatedCost.court}</span></div><div style="display:flex;justify-content:space-between;padding:8px;background:var(--bg-secondary);border-radius:8px;"><span style="font-size:13px;color:var(--text-tertiary);">전문가 수임료</span><span style="font-size:13px;font-weight:600;">${r.estimatedCost.lawyer}</span></div></div></div></details>
+      </div>
+
+      <div class="r-section">
+        <div class="r-cta">
+          <div class="r-cta-notice"><span class="r-cta-notice-icon">⚠️</span><div class="r-cta-notice-text"><strong>본 결과는 AI 진단입니다</strong><br>실제 탕감률과 가능 여부는<br>전문 상담을 통해 확인하세요</div></div>
+          <button class="btn-primary indigo" onclick="openConsultModal()">✅ 채무탕감 무료상담 신청</button>
+        </div>
+      </div>
+
+      <div class="r-section">
+        <details class="collapse-box"><summary>📝 입력 정보 확인</summary><div class="collapse-box-content"><div class="input-summary-grid">${summaryHtml}</div></div></details>
+      </div>
+
+      <div class="r-notice">※ 본 결과는 AI가 입력 정보 기반으로 산출한 예상치입니다.<br>실제 탕감 가능금액은 전문 상담을 통해 정확히 확인하세요.</div>
+    `;
+  }
+  document.getElementById('resultOverlay').classList.add('show');
+  if(r.available){
+    setTimeout(()=>{
+      const target=r.reliefRate,el=document.getElementById('probCounter'),bar=document.getElementById('probBar');
+      if(bar)bar.style.width=target+'%';if(!el)return;
+      const dur=1800,t0=performance.now();
+      function tick(now){const p=Math.min((now-t0)/dur,1);const ease=1-Math.pow(1-p,3);const v=Math.round(target*ease);el.textContent=v;el.dataset.val=v;if(p<1)requestAnimationFrame(tick);else{el.textContent=target;el.dataset.val=target;}}
+      requestAnimationFrame(tick);
+    },400);
+  }
+}
+
+function submitGateAndShowResult(){
+  const name=document.getElementById('gateName')?.value.trim()||'';
+  const p1=document.getElementById('gatePhone1')?.value||'010';
+  const p2=document.getElementById('gatePhone2')?.value.trim()||'';
+  const p3=document.getElementById('gatePhone3')?.value.trim()||'';
+  const agreed=document.getElementById('gateAgree')?.checked;
+  // If form filled, submit to sheets
+  if(name&&p2.length>=3&&p3.length>=4&&agreed){
+    const phone=`${p1}-${p2}-${p3}`,uk=`debt_submitted_${phone}`;
+    if(!localStorage.getItem(uk)){
+      const now=new Date(),fd=new FormData();
+      fd.append('작업날짜',now.toLocaleDateString('ko-KR'));fd.append('작업시간',now.toLocaleTimeString('ko-KR'));
+      fd.append('성함',name);fd.append('연락처',phone);
+      fd.append('연령대',userData.ageGroup||'');fd.append('직업',userData.job||'');
+      fd.append('월소득',userData.income?`${userData.income}만원`:'0원');
+      fd.append('부양가족',userData.dependents||'');fd.append('주거형태',userData.housing||'');
+      fd.append('총채무',userData.totalDebt?`${userData.totalDebt}만원`:'');
+      fd.append('채무종류',userData.debtType||'');fd.append('채권자수',userData.creditorCount||'');
+      fd.append('연체상태',userData.overdueStatus||'');fd.append('채무원인',userData.debtCause||'');
+      fd.append('보유자산',userData.hasAsset||'');fd.append('자산가치',userData.assetValue?`${userData.assetValue}만원`:'0원');
+      fd.append('압류/추심',userData.hasCollection||'');
+      fd.append('추천제도',analysisResult.program||'');
+      fd.append('예상탕감률',analysisResult.reliefRate?`${analysisResult.reliefRate}%`:'');
+      fd.append('예상탕감금액',analysisResult.reliefAmount?formatMoney(analysisResult.reliefAmount):'');
+      fd.append('예상월변제금',analysisResult.monthlyPayment?`${analysisResult.monthlyPayment}만원`:'면제');
+      fd.append('분석일시',now.toLocaleString('ko-KR'));fd.append('개인정보동의','동의');
+      fd.append('유입경로',sessionStorage.getItem('first_referrer')||'UNKNOWN');
+      fd.append('접수경로','결과확인 게이트');
+      fd.append('방문자ID',TRK.vid);
+      fd.append('유입소스',TRK.utmSource||'직접');
+      fd.append('유입매체',TRK.utmMedium||'-');
+      fd.append('유입캠페인',TRK.utmCampaign||'-');
+      fd.append('기기',TRK.device);
+      fd.append('체류시간_초',TRK.getDuration());
+      TRK.converted=true;
+      fetch(SHEET_URL,{method:'POST',body:fd}).catch(()=>{});
+      localStorage.setItem(uk,'submitted');
+    }
+  }
+  showResultScreen();
+}
+
+function closeResult(){document.getElementById('resultOverlay').classList.remove('show');}
+function resetAll(){currentStep=0;userData={};analysisResult={};questions=getQuestions();document.getElementById('slidesContainer').innerHTML='';document.getElementById('progressFill').style.width='0%';showSlide(0);}
+
+function openConsultModal(){document.getElementById('consultModal').classList.add('show');}
+function openExpertModal(){document.getElementById('expertModal').classList.add('show');}
+function openPrivacy(){document.getElementById('privacyModal').classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function closeAllModals(){['successModal','consultModal','expertModal','resultOverlay'].forEach(id=>document.getElementById(id).classList.remove('show'));}
+document.querySelectorAll('.modal-backdrop').forEach(m=>{m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('show');});});
+
+function submitForm(e){
+  e.preventDefault();if(isSubmitting)return;
+  const name=document.getElementById('clientName').value.trim();
+  const p1=document.getElementById('phone1').value,p2=document.getElementById('phone2').value.trim(),p3=document.getElementById('phone3').value.trim();
+  if(!name){alert('성함을 입력해주세요.');return;}
+  if(!p2||!p3||p2.length<3||p3.length<4){alert('연락처를 정확히 입력해주세요.');return;}
+  if(!document.getElementById('agreePrivacy').checked){alert('개인정보취급방침에 동의해주세요.');return;}
+  const phone=`${p1}-${p2}-${p3}`,uk=`debt_submitted_${phone}`;
+  if(localStorage.getItem(uk)){alert('이미 접수된 기록이 있습니다.');return;}
+  isSubmitting=true;const sb=document.getElementById('submitBtn');sb.disabled=true;sb.textContent='전송 중...';
+  const now=new Date(),fd=new FormData();
+  fd.append('작업날짜',now.toLocaleDateString('ko-KR'));fd.append('작업시간',now.toLocaleTimeString('ko-KR'));
+  fd.append('성함',name);fd.append('연락처',phone);
+  fd.append('연령대',userData.ageGroup||'');fd.append('직업',userData.job||'');
+  fd.append('월소득',userData.income?`${userData.income}만원`:'0원');
+  fd.append('부양가족',userData.dependents||'');fd.append('주거형태',userData.housing||'');
+  fd.append('총채무',userData.totalDebt?`${userData.totalDebt}만원`:'');
+  fd.append('채무종류',userData.debtType||'');fd.append('채권자수',userData.creditorCount||'');
+  fd.append('연체상태',userData.overdueStatus||'');fd.append('채무원인',userData.debtCause||'');
+  fd.append('보유자산',userData.hasAsset||'');fd.append('자산가치',userData.assetValue?`${userData.assetValue}만원`:'0원');
+  fd.append('압류/추심',userData.hasCollection||'');
+  fd.append('추천제도',analysisResult.program||'');
+  fd.append('예상탕감률',analysisResult.reliefRate?`${analysisResult.reliefRate}%`:'');
+  fd.append('예상탕감금액',analysisResult.reliefAmount?formatMoney(analysisResult.reliefAmount):'');
+  fd.append('예상월변제금',analysisResult.monthlyPayment?`${analysisResult.monthlyPayment}만원`:'면제');
+  fd.append('분석일시',now.toLocaleString('ko-KR'));fd.append('개인정보동의','동의');
+  fd.append('유입경로',sessionStorage.getItem('first_referrer')||'UNKNOWN');
+  fd.append('접수경로','상담신청 모달');
+  fd.append('방문자ID',TRK.vid);
+  fd.append('유입소스',TRK.utmSource||'직접');
+  fd.append('유입매체',TRK.utmMedium||'-');
+  fd.append('유입캠페인',TRK.utmCampaign||'-');
+  fd.append('기기',TRK.device);
+  fd.append('체류시간_초',TRK.getDuration());
+  TRK.converted=true;
+  fetch(SHEET_URL,{method:'POST',body:fd})
+  .then(()=>{localStorage.setItem(uk,'submitted');closeModal('consultModal');document.getElementById('successModal').classList.add('show');document.getElementById('consultForm').reset();})
+  .catch(()=>alert('오류가 발생했습니다.'))
+  .finally(()=>{isSubmitting=false;sb.disabled=false;sb.textContent='채무탕감 상담 신청하기';});
+}
+['phone2','phone3'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('input',function(){this.value=this.value.replace(/[^0-9]/g,'');});});
+
+// Benefit popups
+const benefitPopups=[
+  {title:'2026년 최저생계비 확정',body:'전년보다 최대 <strong>24만원 증가</strong>했습니다.<br><br>개인회생 변제금은 소득에서 생계비를 뺀 금액으로 산정됩니다.<br>생계비가 올랐다는 건, <strong>변제금이 줄어든다</strong>는 뜻입니다.<br><br>· 1인: 153만원<br>· 2인: 250만원<br>· 3인: 321만원<br>· 4인: 390만원<br>· 5인: 455만원'},
+  {title:'가족에게 들킬까 두려워하지 마세요',body:'개인회생은 <strong>100% 비밀</strong>로 진행됩니다.<br><br>배우자에게 공유되지 않습니다.<br>취업·승진·대출에도 영향 없습니다.<br><br>회생은 패배자의 낙인이 아닙니다.<br><strong>사람답게 살기 위한 제도</strong>입니다.'},
+  {title:'어떤 채무든 대상에 포함됩니다',body:'코인·사채·도박·사업실패·사기피해<br><strong>모두 개인회생 대상</strong>에 포함됩니다.<br><br>막막한 빚, 평균 채무 1억.<br>투잡 쓰리잡을 뛰어도 해결되지 않는 빚.<br><br>신청 즉시 <strong>추심·독촉·압류가 법적으로 중단</strong>됩니다.<br>계좌정지도 해제 가능합니다.'},
+  {title:'주택·차량 보유 가능 재산',body:'살고 있는 집, 차량, 재산을 지키면서<br>채무탕감이 가능합니다.<br><br><strong>보유 가능 재산 목록:</strong><br>· 주택 (시가 기준 일정액 이하)<br>· 생계용 차량 (1,500만원 이하)<br>· 전세보증금<br>· 퇴직금·퇴직연금<br>· 보험해약환급금 일부'},
+  {title:'지인 채무도 조정 가능합니다',body:'미안한 마음, 충분히 이해합니다.<br><br>개인회생은 <strong>원하는 채무만 포함</strong>하여<br>진행할 수 있습니다.<br><br>지인에게 진 빚은 빼고,<br>금융기관 채무만 정리하는 것도 가능합니다.'},
+];
+function openBenefitPopup(idx){
+  const d=benefitPopups[idx];if(!d)return;
+  let el=document.getElementById('benefitPopupBackdrop');
+  if(!el){
+    el=document.createElement('div');el.id='benefitPopupBackdrop';el.className='benefit-popup-backdrop';
+    el.innerHTML='<div class="benefit-popup"><div class="benefit-popup-title" id="bpTitle"></div><div class="benefit-popup-body" id="bpBody"></div><button class="benefit-popup-close" onclick="closeBenefitPopup()">확인</button></div>';
+    document.body.appendChild(el);
+    el.addEventListener('click',function(e){if(e.target===el)closeBenefitPopup();});
+  }
+  document.getElementById('bpTitle').textContent=d.title;
+  document.getElementById('bpBody').innerHTML=d.body;
+  el.classList.add('show');
+}
+function closeBenefitPopup(){const el=document.getElementById('benefitPopupBackdrop');if(el)el.classList.remove('show');}
+
+document.addEventListener('DOMContentLoaded',function(){showSlide(0);});
+</script>
+</body>
+</html>
