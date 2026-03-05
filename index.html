@@ -170,9 +170,10 @@ input,textarea,select{-webkit-user-select:text;user-select:text;}
 .s3-cta-text p strong{color:var(--text-primary);font-weight:700;}
 
 /* Benefit popup */
-.benefit-popup-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;align-items:flex-end;justify-content:center;}
+.benefit-popup-backdrop{display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:9999;align-items:flex-end;justify-content:center;}
 .benefit-popup-backdrop.show{display:flex;}
 .benefit-popup{background:white;width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:24px var(--px) calc(24px + var(--safe-bottom));animation:modalSlideUp 0.3s ease;}
+@media(min-width:600px){.benefit-popup-backdrop{align-items:center;padding:24px;}.benefit-popup{border-radius:20px;max-width:400px;}}
 @keyframes modalSlideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
 .benefit-popup-title{font-size:18px;font-weight:800;color:var(--text-primary);margin-bottom:12px;line-height:1.4;}
 .benefit-popup-body{font-size:var(--t3);color:var(--text-secondary);line-height:1.7;margin-bottom:20px;}
