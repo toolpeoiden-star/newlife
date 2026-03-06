@@ -605,7 +605,6 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 function getQuestions(){
   const base=[
-    {key:'intro1',type:'intro1'},
     {key:'intro2',type:'intro2'},
     {key:'intro3',type:'intro3'},
     {key:'font_size',type:'font_size'},
@@ -757,7 +756,7 @@ function showSlide(idx,dir='forward'){
   topbar.className=`topbar${!isIntro&&!isLoading?' solid':''}`;  topTitle.classList.toggle('visible',!isIntro&&!isLoading);
   backBtn.classList.toggle('visible',idx>0&&!isLoading&&q.type!=='font_size');
 
-  const totalQ=questions.length-5;const qIdx=idx-4;
+  const totalQ=questions.length-4;const qIdx=idx-3;
   if(!isIntro&&!isLoading&&qIdx>0){stepText.classList.remove('visible');progressBar.classList.add('visible');document.getElementById('progressFill').style.width=`${(qIdx/totalQ)*100}%`;}
   else{stepText.classList.remove('visible');progressBar.classList.remove('visible');}
 
