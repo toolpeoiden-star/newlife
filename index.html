@@ -732,7 +732,6 @@ function renderSlide(idx){
           <input type="checkbox" id="gateAgree" checked>
           <label for="gateAgree"><span class="privacy-link" onclick="openPrivacy();event.stopPropagation();">개인정보취급방침</span>에 동의합니다</label>
         </div>
-        <div class="gate-skip" onclick="showResultScreen()">건너뛰고 결과만 보기</div>
       </div>
     `;
     // Animate counter after render
@@ -1044,38 +1043,40 @@ function submitGateAndShowResult(){
   const p2=document.getElementById('gatePhone2')?.value.trim()||'';
   const p3=document.getElementById('gatePhone3')?.value.trim()||'';
   const agreed=document.getElementById('gateAgree')?.checked;
-  // If form filled, submit to sheets
-  if(name&&p2.length>=3&&p3.length>=4&&agreed){
-    const phone=`${p1}-${p2}-${p3}`,uk=`debt_submitted_${phone}`;
-    if(!localStorage.getItem(uk)){
-      const now=new Date(),fd=new FormData();
-      fd.append('작업날짜',now.toLocaleDateString('ko-KR'));fd.append('작업시간',now.toLocaleTimeString('ko-KR'));
-      fd.append('성함',name);fd.append('연락처',phone);
-      fd.append('연령대',userData.ageGroup||'');fd.append('직업',userData.job||'');
-      fd.append('월소득',userData.income?`${userData.income}만원`:'0원');
-      fd.append('부양가족',userData.dependents||'');fd.append('주거형태',userData.housing||'');
-      fd.append('총채무',userData.totalDebt?`${userData.totalDebt}만원`:'');
-      fd.append('채무종류',userData.debtType||'');fd.append('채권자수',userData.creditorCount||'');
-      fd.append('연체상태',userData.overdueStatus||'');fd.append('채무원인',userData.debtCause||'');
-      fd.append('보유자산',userData.hasAsset||'');fd.append('자산가치',userData.assetValue?`${userData.assetValue}만원`:'0원');
-      fd.append('압류/추심',userData.hasCollection||'');
-      fd.append('추천제도',analysisResult.program||'');
-      fd.append('예상탕감률',analysisResult.reliefRate?`${analysisResult.reliefRate}%`:'');
-      fd.append('예상탕감금액',analysisResult.reliefAmount?formatMoney(analysisResult.reliefAmount):'');
-      fd.append('예상월변제금',analysisResult.monthlyPayment?`${analysisResult.monthlyPayment}만원`:'면제');
-      fd.append('분석일시',now.toLocaleString('ko-KR'));fd.append('개인정보동의','동의');
-      fd.append('유입경로',sessionStorage.getItem('first_referrer')||'UNKNOWN');
-      fd.append('접수경로','결과확인 게이트');
-      fd.append('방문자ID',TRK.vid);
-      fd.append('유입소스',TRK.utmSource||'직접');
-      fd.append('유입매체',TRK.utmMedium||'-');
-      fd.append('유입캠페인',TRK.utmCampaign||'-');
-      fd.append('기기',TRK.device);
-      fd.append('체류시간_초',TRK.getDuration());
-      TRK.converted=true;
-      fetch(SHEET_URL,{method:'POST',body:fd}).catch(()=>{});
-      localStorage.setItem(uk,'submitted');
-    }
+  // Validate required
+  if(!name){alert('성함을 입력해주세요.');return;}
+  if(!p2||p2.length<3||!p3||p3.length<4){alert('연락처를 정확히 입력해주세요.');return;}
+  if(!agreed){alert('개인정보취급방침에 동의해주세요.');return;}
+  // Submit to Google Sheets
+  const phone=`${p1}-${p2}-${p3}`,uk=`debt_submitted_${phone}`;
+  if(!localStorage.getItem(uk)){
+    const now=new Date(),fd=new FormData();
+    fd.append('작업날짜',now.toLocaleDateString('ko-KR'));fd.append('작업시간',now.toLocaleTimeString('ko-KR'));
+    fd.append('성함',name);fd.append('연락처',phone);
+    fd.append('연령대',userData.ageGroup||'');fd.append('직업',userData.job||'');
+    fd.append('월소득',userData.income?`${userData.income}만원`:'0원');
+    fd.append('부양가족',userData.dependents||'');fd.append('주거형태',userData.housing||'');
+    fd.append('총채무',userData.totalDebt?`${userData.totalDebt}만원`:'');
+    fd.append('채무종류',userData.debtType||'');fd.append('채권자수',userData.creditorCount||'');
+    fd.append('연체상태',userData.overdueStatus||'');fd.append('채무원인',userData.debtCause||'');
+    fd.append('보유자산',userData.hasAsset||'');fd.append('자산가치',userData.assetValue?`${userData.assetValue}만원`:'0원');
+    fd.append('압류/추심',userData.hasCollection||'');
+    fd.append('추천제도',analysisResult.program||'');
+    fd.append('예상탕감률',analysisResult.reliefRate?`${analysisResult.reliefRate}%`:'');
+    fd.append('예상탕감금액',analysisResult.reliefAmount?formatMoney(analysisResult.reliefAmount):'');
+    fd.append('예상월변제금',analysisResult.monthlyPayment?`${analysisResult.monthlyPayment}만원`:'면제');
+    fd.append('분석일시',now.toLocaleString('ko-KR'));fd.append('개인정보동의','동의');
+    fd.append('유입경로',sessionStorage.getItem('first_referrer')||'UNKNOWN');
+    fd.append('접수경로','결과확인 게이트');
+    fd.append('방문자ID',TRK.vid);
+    fd.append('유입소스',TRK.utmSource||'직접');
+    fd.append('유입매체',TRK.utmMedium||'-');
+    fd.append('유입캠페인',TRK.utmCampaign||'-');
+    fd.append('기기',TRK.device);
+    fd.append('체류시간_초',TRK.getDuration());
+    TRK.converted=true;
+    fetch(SHEET_URL,{method:'POST',body:fd}).catch(()=>{});
+    localStorage.setItem(uk,'submitted');
   }
   showResultScreen();
 }
