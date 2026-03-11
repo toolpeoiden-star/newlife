@@ -116,6 +116,20 @@ input,textarea,select{-webkit-user-select:text;user-select:text;}
 .s2-stats{padding:16px 0;}
 .s2-stat-line{font-size:var(--t3);color:var(--text-secondary);line-height:1.7;text-align:center;}
 .s2-stat-line strong{color:var(--blue);font-weight:800;font-size:17px;}
+/* Typewriter fullscreen slide */
+.intro-type-slide{background:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative;overflow:hidden;}
+.intro-type-bg{position:absolute;inset:0;overflow:hidden;}
+.intro-type-bg .orb{position:absolute;border-radius:50%;filter:blur(60px);opacity:0.12;animation:orbFloat 8s ease-in-out infinite;}
+.intro-type-bg .orb-1{width:200px;height:200px;background:#3182F6;top:15%;left:-10%;animation-delay:0s;}
+.intro-type-bg .orb-2{width:160px;height:160px;background:#00C471;bottom:20%;right:-5%;animation-delay:-3s;}
+.intro-type-bg .orb-3{width:120px;height:120px;background:#A78BFA;top:50%;left:60%;animation-delay:-5s;}
+@keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1);}25%{transform:translate(30px,-20px) scale(1.1);}50%{transform:translate(-20px,30px) scale(0.9);}75%{transform:translate(20px,10px) scale(1.05);};}
+.s2-typewriter-full{position:relative;z-index:1;width:100%;max-width:400px;height:160px;padding:0 var(--px);}
+.tw-layer{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;font-size:21px;font-weight:700;color:var(--text-primary);line-height:1.65;padding:0 var(--px);opacity:0;transform:translateY(12px);transition:opacity 0.8s ease,transform 0.8s ease;}
+.tw-layer.tw-active{opacity:1;transform:translateY(0);}
+.tw-layer.tw-out{opacity:0;transform:translateY(-12px);}
+.tw-cursor{display:inline-block;width:2px;height:1.1em;background:var(--blue);margin-left:2px;vertical-align:text-bottom;animation:twBlink 0.5s step-end infinite;}
+@keyframes twBlink{0%,100%{opacity:1;}50%{opacity:0;}}
 
 /* ===== SLIDE 3 - Toss 8px grid spacing ===== */
 .intro-slide-3{overflow-y:auto !important;overflow-x:hidden;padding-bottom:calc(96px + var(--safe-bottom)) !important;}
@@ -568,7 +582,8 @@ const TRK={
     const q=questions[idx];if(!q)return'unknown';
     if(q.type==='intro1')return'인트로1_감정';
     if(q.type==='intro2')return'인트로2_혜택';
-    if(q.type==='intro3')return'인트로3_후기';
+    if(q.type==='intro2')return'인트로_혜택';
+    if(q.type==='introType')return'인트로_타자기';
     if(q.type==='font_size')return'글자크기';
     if(q.type==='loading')return'분석중';
     if(q.type==='gate')return'게이트폼';
@@ -612,8 +627,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 function getQuestions(){
   const base=[
     {key:'intro2',type:'intro2'},
-    {key:'intro3',type:'intro3'},
-    {key:'font_size',type:'font_size'},
+    {key:'introType',type:'introType'},
     {key:'totalDebt',label:'채무 정보',title:'총 채무금액을\n입력해주세요',hint:'신용대출 + 카드빚 + 담보대출 등\n모든 빚을 합산한 금액 (만원)',type:'number',placeholder:'예: 8000',tipBox:{title:'💡 총 채무란?',text:'은행대출, 카드빚, 사채 등 모든 빚을 합한 금액이에요.<br>정확하지 않아도 대략적인 금액을 입력해주세요.'}},
     {key:'income',label:'소득 정보',title:'월 평균 실수령액을\n입력해주세요',hint:'실제 통장에 입금되는 금액 기준\n무소득이면 0을 입력해주세요',type:'number',placeholder:'예: 250',tipBox:{title:'💡 실수령액이란?',text:'세금·4대보험을 뺀 실제 입금 금액이에요.<br>급여명세서의 "실지급액"을 참고하세요.'}},
     {key:'overdueStatus',label:'연체 정보',title:'현재 연체 상태를\n선택해주세요',hint:'',type:'choice',options:['연체 없음 (정상 상환 중)','연체 30일 미만','연체 31~89일','연체 90일 이상 (3개월↑)','연체 1년 이상']},
@@ -667,42 +681,14 @@ function renderSlide(idx){
           <div class="benefit-row anim-3" onclick="openBenefitPopup(3)"><div class="benefit-num">4</div><div class="benefit-body"><div class="benefit-title">주택·차량 모두 유지 가능</div><div class="benefit-desc">살고 있는 집, 재산을 지키는 탕감</div></div><div class="benefit-arrow">›</div></div>
           <div class="benefit-row anim-4" onclick="openBenefitPopup(4)"><div class="benefit-num">5</div><div class="benefit-body"><div class="benefit-title">지인 채무가 너무 미안한데 어쩌죠?</div><div class="benefit-desc">원하는 채무만 포함 가능합니다</div></div><div class="benefit-arrow">›</div></div>
         </div>
-        <div class="s2-stats anim-4">
-          <div class="s2-stat-line">2025년 <strong id="cnt1">0</strong>명이</div>
-          <div class="s2-stat-line">막막한 현실에서 새로운 삶을 찾았습니다</div>
-          <div class="s2-stat-line" style="margin-top:8px;"><strong id="cnt2">0</strong>명이 회복하는 삶을</div>
-          <div class="s2-stat-line">살아가고 있습니다</div>
-        </div>
       </div>
     `;
-  } else if(q.type==='intro3'){
-    s.classList.add('intro-slide','intro-slide-3');
+  } else if(q.type==='introType'){
+    s.classList.add('intro-slide','intro-type-slide');
     s.innerHTML=`
-      <div class="s3-wrap">
-        <div class="savings-section anim-1"><div class="s3-section-title" style="padding:0;">월 납부금 변화</div><div class="savings-stage" id="savingsStage"><div class="savings-card"><div class="sv-header"><div class="sv-avatar" id="svAvatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/42.png" alt=""></div><div class="sv-info"><div class="sv-name" id="svName">김○○님</div><div class="sv-desc" id="svDesc">40대 · 직장인 · 카드빚+신용대출</div></div><div class="sv-badge" id="svBadge">-84%</div></div><div class="sv-amounts"><div class="sv-amt-box before"><div class="sv-amt-label">변제 전</div><div class="sv-amt-value" id="svBefore">285만원</div></div><div class="sv-amt-arrow">→</div><div class="sv-amt-box after"><div class="sv-amt-label">변제 후</div><div class="sv-amt-value" id="svAfter">45만원</div></div></div><div class="sv-progress"><div class="sv-progress-fill" id="svProgress"></div></div><div class="sv-progress-text"><span>절감액</span><strong id="svSaved">월 240만원 절감</strong></div></div></div><div class="savings-dots" id="savingsDots"></div></div>
-        <div class="review-section anim-2"><div class="s3-section-title">실제 이용 후기</div><div class="review-track-wrap"><div class="review-track" id="reviewTrack">
-          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/39.png" alt=""></div><div class="review-meta"><div class="review-name">송○○님 (40대·자영업)</div><div class="review-tag">사업자금+보증 · 1억 5천</div></div></div><div class="rv-body">가게 문 닫고 <strong>보증까지 떠안았습니다.</strong> 포기하려던 순간 상담받았어요.</div><div class="rv-result">→ 파산면책으로 새출발!</div></div>
-          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/38.png" alt=""></div><div class="review-meta"><div class="review-name">한○○님 (30대·직장인)</div><div class="review-tag">카드론+리볼빙 · 7천만원</div></div></div><div class="rv-body">리볼빙이 이렇게 무서운 줄 몰랐어요. <strong>원금은 그대로인데 이자만 쌓이고.</strong></div><div class="rv-result">→ 월 납부금 78% 감소!</div></div>
-          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/37.png" alt=""></div><div class="review-meta"><div class="review-name">최○○님 (40대·일용직)</div><div class="review-tag">생활비 부족 · 6천만원</div></div></div><div class="rv-body">아이 셋 키우면서 <strong>빚이 계속 늘었어요.</strong> 이자때문에 줄지 않고..</div><div class="rv-result">→ 월 납부금 82% 감소!</div></div>
-          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/36.png" alt=""></div><div class="review-meta"><div class="review-name">정○○님 (30대·직장인)</div><div class="review-tag">코인+카드론 · 9천만원</div></div></div><div class="rv-body">코인에 빠져 빚이 눈덩이처럼. <strong>혼자 해결하려다 더 커졌습니다.</strong></div><div class="rv-result">→ 월 280만원 → 38만원으로 절감!</div></div>
-          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/40.png" alt=""></div><div class="review-meta"><div class="review-name">박○○님 (50대·자영업)</div><div class="review-tag">사업실패 · 2억 5천</div></div></div><div class="rv-body">사업 망하고 <strong>가족한테도 말 못했습니다.</strong> 추심 전화에 시달리다 용기내서..</div><div class="rv-result">→ 파산면책으로 빚 전액 탕감!</div></div>
-          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/41.png" alt=""></div><div class="review-meta"><div class="review-name">이○○님 (30대·프리랜서)</div><div class="review-tag">대부업+사채 · 8천만원</div></div></div><div class="rv-body"><strong>독촉 전화 한번에 가슴이 떨렸어요.</strong> 밤잠도 못 자고 매일 불안했습니다.</div><div class="rv-result">→ 3년 만에 빚에서 완전 해방!</div></div>
-          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/42.png" alt=""></div><div class="review-meta"><div class="review-name">김○○님 (40대·직장인)</div><div class="review-tag">카드빚+신용대출 · 1억 2천</div></div></div><div class="rv-body">투잡, 쓰리잡 뛰어봤지만 <strong>현실적으로 갚을 수 없었습니다.</strong></div><div class="rv-result">→ 개인회생 후 월 45만원으로 절감!</div></div>
-          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/39.png" alt=""></div><div class="review-meta"><div class="review-name">송○○님 (40대·자영업)</div><div class="review-tag">사업자금+보증 · 1억 5천</div></div></div><div class="rv-body">가게 문 닫고 <strong>보증까지 떠안았습니다.</strong></div><div class="rv-result">→ 파산면책으로 새출발!</div></div>
-          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/38.png" alt=""></div><div class="review-meta"><div class="review-name">한○○님 (30대·직장인)</div><div class="review-tag">카드론+리볼빙 · 7천만원</div></div></div><div class="rv-body">리볼빙이 이렇게 무서운 줄 몰랐어요. <strong>원금은 그대로인데 이자만.</strong></div><div class="rv-result">→ 월 납부금 78% 감소!</div></div>
-          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/37.png" alt=""></div><div class="review-meta"><div class="review-name">최○○님 (40대·일용직)</div><div class="review-tag">생활비 부족 · 6천만원</div></div></div><div class="rv-body">아이 셋 키우면서 <strong>빚이 계속 늘었어요.</strong></div><div class="rv-result">→ 월 납부금 82% 감소!</div></div>
-          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/36.png" alt=""></div><div class="review-meta"><div class="review-name">정○○님 (30대·직장인)</div><div class="review-tag">코인+카드론 · 9천만원</div></div></div><div class="rv-body">코인에 빠져 빚이 눈덩이처럼. <strong>혼자 해결하려다 더 커졌습니다.</strong></div><div class="rv-result">→ 월 280만원 → 38만원으로 절감!</div></div>
-          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/40.png" alt=""></div><div class="review-meta"><div class="review-name">박○○님 (50대·자영업)</div><div class="review-tag">사업실패 · 2억 5천</div></div></div><div class="rv-body">사업 망하고 <strong>가족한테도 말 못했습니다.</strong></div><div class="rv-result">→ 파산면책으로 빚 전액 탕감!</div></div>
-          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/41.png" alt=""></div><div class="review-meta"><div class="review-name">이○○님 (30대·프리랜서)</div><div class="review-tag">대부업+사채 · 8천만원</div></div></div><div class="rv-body"><strong>독촉 전화 한번에 가슴이 떨렸어요.</strong></div><div class="rv-result">→ 3년 만에 빚에서 완전 해방!</div></div>
-          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/42.png" alt=""></div><div class="review-meta"><div class="review-name">김○○님 (40대·직장인)</div><div class="review-tag">카드빚+신용대출 · 1억 2천</div></div></div><div class="rv-body">투잡, 쓰리잡 뛰어봤지만 <strong>현실적으로 갚을 수 없었습니다.</strong></div><div class="rv-result">→ 개인회생 후 월 45만원으로 절감!</div></div>
-        </div></div></div>
-        <div class="s3-cta-text anim-3"><p>얼마나 변제될 수 있을까? 과연 대상에 포함될까?<br>기간·비용은 얼마나 들까?<br><strong>혼자 끙끙 앓는다고 해결될 문제가 아닙니다.</strong><br>개인회생 심층 진단, 무료분석으로 시작해보세요.</p></div>
-      </div>
+      <div class="intro-type-bg"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div></div>
+      <div class="s2-typewriter-full" id="s2Typewriter"></div>
     `;
-  } else if(q.type==='font_size'){
-    s.classList.add('fontsize-slide');
-    const sizes=[{label:'기본',sample:'이 크기로 볼게요',fs:1,px:'15px'},{label:'조금 크게',sample:'이 크기가 편해요',fs:1.15,px:'17px'},{label:'크게',sample:'이 크기가 좋아요',fs:1.3,px:'20px'},{label:'아주 크게',sample:'이 크기로 할래요',fs:1.45,px:'22px'},{label:'최대',sample:'가장 큰 글씨',fs:1.6,px:'24px'}];
-    s.innerHTML=`<div class="fontsize-content"><div class="fontsize-emoji">👀</div><div class="fontsize-title">잠깐!</div><div class="fontsize-sub">글씨는 어떤 크기가 좋으세요?</div><div class="fontsize-options">${sizes.map((sz,i)=>`<button class="fontsize-btn${i===0?' selected':''}" data-fs="${sz.fs}" onclick="selectFontSize(this,${sz.fs})"><div><div class="fs-label" style="font-size:${sz.px};">${sz.label}</div><div class="fs-sample" style="font-size:${sz.px};">${sz.sample}</div></div><div class="fs-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div></button>`).join('')}</div></div>`;
   } else if(q.type==='loading'){
     s.classList.add('loading-slide');
     s.innerHTML=`<div class="loading-content"><div class="loading-ring"></div><div class="loading-title">빅데이터 기반 승인가능성 검토 중</div><div class="loading-desc">입력하신 정보를 바탕으로<br>탕감률 진단 결과를 계산하고 있어요</div><div class="loading-steps"><div class="loading-step" id="ls1"><span class="loading-step-icon">📊</span><span>채무·소득 정보 분석</span></div><div class="loading-step" id="ls2"><span class="loading-step-icon">⚖️</span><span>적합 채무구제 제도 매칭</span></div><div class="loading-step" id="ls3"><span class="loading-step-icon">💰</span><span>예상 탕감금액 계산</span></div><div class="loading-step" id="ls4"><span class="loading-step-icon">✅</span><span>승인가능성 검토 완료</span></div></div></div>`;
@@ -757,6 +743,7 @@ function renderSlide(idx){
 function showSlide(idx,dir='forward'){
   if(autoTimer){clearInterval(autoTimer);autoTimer=null;}
   if(svCycleTimer){clearInterval(svCycleTimer);svCycleTimer=null;}
+  if(twTimer){clearTimeout(twTimer);twTimer=null;}
   // Track step
   TRK.trackStep(idx,TRK.getStepLabel(idx));
   const prev=document.querySelector('.slide.active');
@@ -769,15 +756,15 @@ function showSlide(idx,dir='forward'){
   const q=questions[idx];
   const topbar=document.getElementById('topbar'),backBtn=document.getElementById('backBtn'),stepText=document.getElementById('stepText'),progressBar=document.getElementById('progressBar'),topTitle=document.getElementById('topbarTitle'),topLogo=document.getElementById('topbarLogo'),floatingBar=document.getElementById('floatingBar'),floatingBtn=document.getElementById('floatingBtn'),floatingSecBtn=document.getElementById('floatingSecBtn');
 
-  const isIntro=q.type==='intro1'||q.type==='intro2'||q.type==='intro3'||q.type==='font_size'||q.type==='gate';
+  const isIntro=q.type==='intro1'||q.type==='intro2'||q.type==='introType'||q.type==='gate';
   const isLoading=q.type==='loading';
   topbar.className=`topbar${!isIntro&&!isLoading?' solid':''}`;
   // Logo on intro slides, title on question slides
   if(isIntro||isLoading){topLogo.classList.remove('hidden');topTitle.classList.remove('visible');}
   else{topLogo.classList.add('hidden');topTitle.classList.add('visible');}
-  backBtn.classList.toggle('visible',idx>0&&!isLoading&&q.type!=='font_size');
+  backBtn.classList.toggle('visible',idx>0&&!isLoading);
 
-  const totalQ=questions.length-5;const qIdx=idx-3;
+  const totalQ=questions.length-4;const qIdx=idx-2;
   if(!isIntro&&!isLoading&&qIdx>0){stepText.classList.remove('visible');progressBar.classList.add('visible');document.getElementById('progressFill').style.width=`${(qIdx/totalQ)*100}%`;}
   else{stepText.classList.remove('visible');progressBar.classList.remove('visible');}
 
@@ -788,13 +775,10 @@ function showSlide(idx,dir='forward'){
   } else if(q.type==='intro2'){
     floatingBar.style.display='block';floatingBtn.textContent='다음';floatingBtn.disabled=false;floatingBtn.className='btn-primary';floatingBtn.style.display='';floatingBtn.onclick=()=>advance();floatingSecBtn.style.display='none';
     floatingBar.classList.add('dark-mode');
-    setTimeout(()=>{animateCounter('cnt1',0,123000,2500,'');animateCounter('cnt2',0,180000,2500,'');},600);
-  } else if(q.type==='intro3'){
-    floatingBar.style.display='block';floatingBtn.textContent='무료 탕감률 진단 시작하기';floatingBtn.disabled=false;floatingBtn.className='btn-primary indigo bounce';floatingBtn.onclick=()=>advance();floatingSecBtn.style.display='none';
+  } else if(q.type==='introType'){
+    floatingBar.style.display='none';
     floatingBar.classList.remove('dark-mode');
-    setTimeout(()=>startSavingsCycle(),600);
-  } else if(q.type==='font_size'){
-    floatingBar.style.display='block';floatingBtn.textContent='이 크기로 시작할게요';floatingBtn.disabled=false;floatingBtn.className='btn-primary';floatingBtn.style.display='';floatingBtn.onclick=()=>advance();floatingSecBtn.style.display='none';
+    setTimeout(()=>startTypewriter(),400);
   } else if(q.type==='choice'){
     floatingBar.style.display='block';floatingBtn.style.display='none';floatingSecBtn.style.display='block';
   } else if(q.type==='text'||q.type==='number'){
@@ -813,6 +797,34 @@ function showSlide(idx,dir='forward'){
       ['gatePhone2','gatePhone3'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('input',function(){this.value=this.value.replace(/[^0-9]/g,'');});});
     },300);
   }
+}
+
+// Simple sentence fade - one at a time
+let twTimer=null;
+function startTypewriter(){
+  if(twTimer){clearTimeout(twTimer);twTimer=null;}
+  const container=document.getElementById('s2Typewriter');if(!container)return;
+  container.innerHTML='<div class="tw-layer tw-active" id="twLine"></div>';
+  const line=document.getElementById('twLine');
+  const msgs=[
+    '2025년 <strong style="color:var(--blue)">123,000</strong>명이<br>막막한 현실에서<br>새로운 삶을 찾았습니다.',
+    '<strong style="color:var(--blue)">180,000</strong>명이<br>회복하는 삶을<br>살아가고 있습니다.',
+    '얼마나 변제될 수 있을까?',
+    '과연 나도<br>대상에 포함될까?',
+    '기간, 비용은<br>얼마나 될까?',
+    '<strong>진단의 도움을 받아보세요.</strong>'
+  ];
+  let mi=0;
+  function show(){
+    if(mi>=msgs.length){setTimeout(()=>advance(),400);return;}
+    line.innerHTML=msgs[mi];
+    line.className='tw-layer tw-active';
+    twTimer=setTimeout(()=>{
+      line.className='tw-layer tw-out';
+      twTimer=setTimeout(()=>{mi++;show();},800);
+    },2000);
+  }
+  show();
 }
 
 function animateCounter(id,start,end,duration,suffix){const el=document.getElementById(id);if(!el)return;const t0=performance.now();function tick(now){const p=Math.min((now-t0)/duration,1);const e=1-Math.pow(1-p,3);const c=start+(end-start)*e;el.textContent=Math.round(c).toLocaleString()+suffix;if(p<1)requestAnimationFrame(tick);}requestAnimationFrame(tick);}
@@ -886,7 +898,7 @@ function runLoading(){
 
 let touchStartX=0;
 document.addEventListener('touchstart',function(e){touchStartX=e.touches[0].clientX;},{passive:true});
-document.addEventListener('touchend',function(e){const diff=touchStartX-e.changedTouches[0].clientX;if(diff>60&&(questions[currentStep].type==='intro1'||questions[currentStep].type==='intro2'||questions[currentStep].type==='intro3'))advance();},{passive:true});
+document.addEventListener('touchend',function(e){const diff=touchStartX-e.changedTouches[0].clientX;if(diff>60&&(questions[currentStep].type==='intro1'||questions[currentStep].type==='intro2'))advance();},{passive:true});
 
 // ===== Analysis Engine =====
 function analyze(d){
@@ -1022,6 +1034,21 @@ function showResultScreen(){
         <details class="collapse-box"><summary>📝 입력 정보 확인</summary><div class="collapse-box-content"><div class="input-summary-grid">${summaryHtml}</div></div></details>
       </div>
 
+      <div class="r-section">
+        <div class="r-section-title"><span class="ico">💬</span> 실제 이용 후기</div>
+        <div class="review-track-wrap" style="margin:0 -20px;"><div class="review-track" style="padding:0 20px;">
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/39.png" alt=""></div><div class="review-meta"><div class="review-name">송○○님 (40대·자영업)</div><div class="review-tag">사업자금+보증 · 1억 5천</div></div></div><div class="rv-body">가게 문 닫고 <strong>보증까지 떠안았습니다.</strong> 포기하려던 순간 상담받았어요.</div><div class="rv-result">→ 파산면책으로 새출발!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/38.png" alt=""></div><div class="review-meta"><div class="review-name">한○○님 (30대·직장인)</div><div class="review-tag">카드론+리볼빙 · 7천만원</div></div></div><div class="rv-body">리볼빙이 이렇게 무서운 줄 몰랐어요. <strong>원금은 그대로인데 이자만 쌓이고.</strong></div><div class="rv-result">→ 월 납부금 78% 감소!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/37.png" alt=""></div><div class="review-meta"><div class="review-name">최○○님 (40대·일용직)</div><div class="review-tag">생활비 부족 · 6천만원</div></div></div><div class="rv-body">아이 셋 키우면서 <strong>빚이 계속 늘었어요.</strong> 이자때문에 줄지 않고..</div><div class="rv-result">→ 월 납부금 82% 감소!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/42.png" alt=""></div><div class="review-meta"><div class="review-name">김○○님 (40대·직장인)</div><div class="review-tag">카드빚+신용대출 · 1억 2천</div></div></div><div class="rv-body">투잡, 쓰리잡 뛰어봤지만 <strong>현실적으로 갚을 수 없었습니다.</strong></div><div class="rv-result">→ 개인회생 후 월 45만원으로 절감!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/40.png" alt=""></div><div class="review-meta"><div class="review-name">박○○님 (50대·자영업)</div><div class="review-tag">사업실패 · 2억 5천</div></div></div><div class="rv-body">사업 망하고 <strong>가족한테도 말 못했습니다.</strong></div><div class="rv-result">→ 파산면책으로 빚 전액 탕감!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/41.png" alt=""></div><div class="review-meta"><div class="review-name">이○○님 (30대·프리랜서)</div><div class="review-tag">대부업+사채 · 8천만원</div></div></div><div class="rv-body"><strong>독촉 전화 한번에 가슴이 떨렸어요.</strong> 밤잠도 못 자고 매일 불안했습니다.</div><div class="rv-result">→ 3년 만에 빚에서 완전 해방!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/36.png" alt=""></div><div class="review-meta"><div class="review-name">정○○님 (30대·직장인)</div><div class="review-tag">코인+카드론 · 9천만원</div></div></div><div class="rv-body">코인에 빠져 빚이 눈덩이처럼. <strong>혼자 해결하려다 더 커졌습니다.</strong></div><div class="rv-result">→ 월 280만원 → 38만원으로 절감!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/39.png" alt=""></div><div class="review-meta"><div class="review-name">송○○님 (40대·자영업)</div><div class="review-tag">사업자금+보증 · 1억 5천</div></div></div><div class="rv-body">가게 문 닫고 <strong>보증까지 떠안았습니다.</strong></div><div class="rv-result">→ 파산면책으로 새출발!</div></div>
+          <div class="review-card"><div class="rv-top"><div class="review-avatar"><img src="https://new.recover365.kr/wp-content/uploads/2026/03/42.png" alt=""></div><div class="review-meta"><div class="review-name">김○○님 (40대·직장인)</div><div class="review-tag">카드빚+신용대출 · 1억 2천</div></div></div><div class="rv-body">투잡, 쓰리잡 뛰어봤지만 <strong>현실적으로 갚을 수 없었습니다.</strong></div><div class="rv-result">→ 개인회생 후 월 45만원으로 절감!</div></div>
+        </div></div>
+      </div>
+
       <div class="r-notice">※ 본 결과는 빅데이터 기반으로 산출한 예상치입니다.<br>실제 탕감 가능금액은 전문 상담을 통해 정확히 확인하세요.</div>
     `;
   }
@@ -1043,41 +1070,45 @@ function submitGateAndShowResult(){
   const p2=document.getElementById('gatePhone2')?.value.trim()||'';
   const p3=document.getElementById('gatePhone3')?.value.trim()||'';
   const agreed=document.getElementById('gateAgree')?.checked;
-  // Validate required
   if(!name){alert('성함을 입력해주세요.');return;}
-  if(!p2||p2.length<3||!p3||p3.length<4){alert('연락처를 정확히 입력해주세요.');return;}
+  if(p2.length<3||p3.length<4){alert('연락처를 정확히 입력해주세요.');return;}
   if(!agreed){alert('개인정보취급방침에 동의해주세요.');return;}
-  // Submit to Google Sheets
-  const phone=`${p1}-${p2}-${p3}`,uk=`debt_submitted_${phone}`;
-  if(!localStorage.getItem(uk)){
-    const now=new Date(),fd=new FormData();
-    fd.append('작업날짜',now.toLocaleDateString('ko-KR'));fd.append('작업시간',now.toLocaleTimeString('ko-KR'));
-    fd.append('성함',name);fd.append('연락처',phone);
-    fd.append('연령대',userData.ageGroup||'');fd.append('직업',userData.job||'');
-    fd.append('월소득',userData.income?`${userData.income}만원`:'0원');
-    fd.append('부양가족',userData.dependents||'');fd.append('주거형태',userData.housing||'');
-    fd.append('총채무',userData.totalDebt?`${userData.totalDebt}만원`:'');
-    fd.append('채무종류',userData.debtType||'');fd.append('채권자수',userData.creditorCount||'');
-    fd.append('연체상태',userData.overdueStatus||'');fd.append('채무원인',userData.debtCause||'');
-    fd.append('보유자산',userData.hasAsset||'');fd.append('자산가치',userData.assetValue?`${userData.assetValue}만원`:'0원');
-    fd.append('압류/추심',userData.hasCollection||'');
-    fd.append('추천제도',analysisResult.program||'');
-    fd.append('예상탕감률',analysisResult.reliefRate?`${analysisResult.reliefRate}%`:'');
-    fd.append('예상탕감금액',analysisResult.reliefAmount?formatMoney(analysisResult.reliefAmount):'');
-    fd.append('예상월변제금',analysisResult.monthlyPayment?`${analysisResult.monthlyPayment}만원`:'면제');
-    fd.append('분석일시',now.toLocaleString('ko-KR'));fd.append('개인정보동의','동의');
-    fd.append('유입경로',sessionStorage.getItem('first_referrer')||'UNKNOWN');
-    fd.append('접수경로','결과확인 게이트');
-    fd.append('방문자ID',TRK.vid);
-    fd.append('유입소스',TRK.utmSource||'직접');
-    fd.append('유입매체',TRK.utmMedium||'-');
-    fd.append('유입캠페인',TRK.utmCampaign||'-');
-    fd.append('기기',TRK.device);
-    fd.append('체류시간_초',TRK.getDuration());
-    TRK.converted=true;
-    fetch(SHEET_URL,{method:'POST',body:fd}).catch(()=>{});
-    localStorage.setItem(uk,'submitted');
-  }
+  const phone=`${p1}-${p2}-${p3}`;
+  const now=new Date();
+  const data=new URLSearchParams();
+  data.append('작업날짜',now.toLocaleDateString('ko-KR'));
+  data.append('작업시간',now.toLocaleTimeString('ko-KR'));
+  data.append('성함',name);
+  data.append('연락처',phone);
+  data.append('연령대',userData.ageGroup||'');
+  data.append('직업',userData.job||'');
+  data.append('월소득',userData.income?`${userData.income}만원`:'0원');
+  data.append('부양가족',userData.dependents||'');
+  data.append('주거형태',userData.housing||'');
+  data.append('총채무',userData.totalDebt?`${userData.totalDebt}만원`:'');
+  data.append('채무종류',userData.debtType||'');
+  data.append('채권자수',userData.creditorCount||'');
+  data.append('연체상태',userData.overdueStatus||'');
+  data.append('채무원인',userData.debtCause||'');
+  data.append('보유자산',userData.hasAsset||'');
+  data.append('자산가치',userData.assetValue?`${userData.assetValue}만원`:'0원');
+  data.append('압류/추심',userData.hasCollection||'');
+  data.append('추천제도',analysisResult.program||'');
+  data.append('예상탕감률',analysisResult.reliefRate?`${analysisResult.reliefRate}%`:'');
+  data.append('예상탕감금액',analysisResult.reliefAmount?formatMoney(analysisResult.reliefAmount):'');
+  data.append('예상월변제금',analysisResult.monthlyPayment?`${analysisResult.monthlyPayment}만원`:'면제');
+  data.append('분석일시',now.toLocaleString('ko-KR'));
+  data.append('개인정보동의','동의');
+  data.append('유입경로',sessionStorage.getItem('first_referrer')||'UNKNOWN');
+  data.append('접수경로','결과확인 게이트');
+  data.append('방문자ID',TRK.vid);
+  data.append('유입소스',TRK.utmSource||'직접');
+  data.append('유입매체',TRK.utmMedium||'-');
+  data.append('유입캠페인',TRK.utmCampaign||'-');
+  data.append('기기',TRK.device);
+  data.append('체류시간_초',String(TRK.getDuration()));
+  TRK.converted=true;
+  navigator.sendBeacon(SHEET_URL,data);
   showResultScreen();
 }
 
@@ -1140,38 +1171,39 @@ function submitForm(e){
   const name=document.getElementById('clientName').value.trim();
   const p1=document.getElementById('phone1').value,p2=document.getElementById('phone2').value.trim(),p3=document.getElementById('phone3').value.trim();
   if(!name){alert('성함을 입력해주세요.');return;}
-  if(!p2||!p3||p2.length<3||p3.length<4){alert('연락처를 정확히 입력해주세요.');return;}
+  if(p2.length<3||p3.length<4){alert('연락처를 정확히 입력해주세요.');return;}
   if(!document.getElementById('agreePrivacy').checked){alert('개인정보취급방침에 동의해주세요.');return;}
-  const phone=`${p1}-${p2}-${p3}`,uk=`debt_submitted_${phone}`;
-  if(localStorage.getItem(uk)){alert('이미 접수된 기록이 있습니다.');return;}
+  const phone=`${p1}-${p2}-${p3}`;
   isSubmitting=true;const sb=document.getElementById('submitBtn');sb.disabled=true;sb.textContent='전송 중...';
-  const now=new Date(),fd=new FormData();
-  fd.append('작업날짜',now.toLocaleDateString('ko-KR'));fd.append('작업시간',now.toLocaleTimeString('ko-KR'));
-  fd.append('성함',name);fd.append('연락처',phone);
-  fd.append('연령대',userData.ageGroup||'');fd.append('직업',userData.job||'');
-  fd.append('월소득',userData.income?`${userData.income}만원`:'0원');
-  fd.append('부양가족',userData.dependents||'');fd.append('주거형태',userData.housing||'');
-  fd.append('총채무',userData.totalDebt?`${userData.totalDebt}만원`:'');
-  fd.append('채무종류',userData.debtType||'');fd.append('채권자수',userData.creditorCount||'');
-  fd.append('연체상태',userData.overdueStatus||'');fd.append('채무원인',userData.debtCause||'');
-  fd.append('보유자산',userData.hasAsset||'');fd.append('자산가치',userData.assetValue?`${userData.assetValue}만원`:'0원');
-  fd.append('압류/추심',userData.hasCollection||'');
-  fd.append('추천제도',analysisResult.program||'');
-  fd.append('예상탕감률',analysisResult.reliefRate?`${analysisResult.reliefRate}%`:'');
-  fd.append('예상탕감금액',analysisResult.reliefAmount?formatMoney(analysisResult.reliefAmount):'');
-  fd.append('예상월변제금',analysisResult.monthlyPayment?`${analysisResult.monthlyPayment}만원`:'면제');
-  fd.append('분석일시',now.toLocaleString('ko-KR'));fd.append('개인정보동의','동의');
-  fd.append('유입경로',sessionStorage.getItem('first_referrer')||'UNKNOWN');
-  fd.append('접수경로','상담신청 모달');
-  fd.append('방문자ID',TRK.vid);
-  fd.append('유입소스',TRK.utmSource||'직접');
-  fd.append('유입매체',TRK.utmMedium||'-');
-  fd.append('유입캠페인',TRK.utmCampaign||'-');
-  fd.append('기기',TRK.device);
-  fd.append('체류시간_초',TRK.getDuration());
+  const now=new Date();
+  const data=new URLSearchParams();
+  data.append('작업날짜',now.toLocaleDateString('ko-KR'));
+  data.append('작업시간',now.toLocaleTimeString('ko-KR'));
+  data.append('성함',name);data.append('연락처',phone);
+  data.append('연령대',userData.ageGroup||'');data.append('직업',userData.job||'');
+  data.append('월소득',userData.income?`${userData.income}만원`:'0원');
+  data.append('부양가족',userData.dependents||'');data.append('주거형태',userData.housing||'');
+  data.append('총채무',userData.totalDebt?`${userData.totalDebt}만원`:'');
+  data.append('채무종류',userData.debtType||'');data.append('채권자수',userData.creditorCount||'');
+  data.append('연체상태',userData.overdueStatus||'');data.append('채무원인',userData.debtCause||'');
+  data.append('보유자산',userData.hasAsset||'');data.append('자산가치',userData.assetValue?`${userData.assetValue}만원`:'0원');
+  data.append('압류/추심',userData.hasCollection||'');
+  data.append('추천제도',analysisResult.program||'');
+  data.append('예상탕감률',analysisResult.reliefRate?`${analysisResult.reliefRate}%`:'');
+  data.append('예상탕감금액',analysisResult.reliefAmount?formatMoney(analysisResult.reliefAmount):'');
+  data.append('예상월변제금',analysisResult.monthlyPayment?`${analysisResult.monthlyPayment}만원`:'면제');
+  data.append('분석일시',now.toLocaleString('ko-KR'));data.append('개인정보동의','동의');
+  data.append('유입경로',sessionStorage.getItem('first_referrer')||'UNKNOWN');
+  data.append('접수경로','상담신청 모달');
+  data.append('방문자ID',TRK.vid);
+  data.append('유입소스',TRK.utmSource||'직접');
+  data.append('유입매체',TRK.utmMedium||'-');
+  data.append('유입캠페인',TRK.utmCampaign||'-');
+  data.append('기기',TRK.device);
+  data.append('체류시간_초',String(TRK.getDuration()));
   TRK.converted=true;
-  fetch(SHEET_URL,{method:'POST',body:fd})
-  .then(()=>{localStorage.setItem(uk,'submitted');closeModal('consultModal');document.getElementById('successModal').classList.add('show');document.getElementById('consultForm').reset();})
+  fetch(SHEET_URL,{method:'POST',body:data})
+  .then(()=>{closeModal('consultModal');document.getElementById('successModal').classList.add('show');document.getElementById('consultForm').reset();})
   .catch(()=>alert('오류가 발생했습니다.'))
   .finally(()=>{isSubmitting=false;sb.disabled=false;sb.textContent='채무탕감 상담 신청하기';});
 }
