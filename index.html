@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#FFFFFF">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>무료 예상탕감률 조회</title>
+<title>무료 탕감률 진단 조회</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
 <script>
@@ -248,9 +248,11 @@ input,textarea,select{-webkit-user-select:text;user-select:text;}
 /* Gate form (before result) */
 .gate-slide{background:var(--bg);display:flex;flex-direction:column;justify-content:center;}
 .gate-content{padding:0 var(--px);flex:1;display:flex;flex-direction:column;justify-content:center;max-width:420px;margin:0 auto;width:100%;}
-.gate-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--green-bg);border-radius:20px;font-size:var(--t4);font-weight:700;color:var(--green);margin-bottom:16px;align-self:flex-start;}
-.gate-title{font-size:var(--t1);font-weight:800;line-height:1.35;letter-spacing:-0.8px;color:var(--text-primary);margin-bottom:8px;}
-.gate-desc{font-size:var(--t3);color:var(--text-secondary);margin-bottom:32px;line-height:1.5;}
+.gate-prob{text-align:center;margin-bottom:24px;}
+.gate-prob-label{font-size:var(--t4);font-weight:600;color:var(--text-tertiary);margin-bottom:4px;}
+.gate-prob-num{font-size:56px;font-weight:900;color:var(--blue);letter-spacing:-2px;line-height:1;}
+.gate-prob-unit{font-size:28px;font-weight:800;color:var(--blue);}
+.gate-title{font-size:var(--t3);font-weight:600;line-height:1.6;color:var(--text-secondary);margin-bottom:28px;}
 .gate-form-group{margin-bottom:16px;}
 .gate-form-label{font-size:var(--t3);font-weight:600;margin-bottom:8px;display:block;color:var(--text-primary);}
 .gate-form-label .req{color:var(--red);}
@@ -446,7 +448,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text;}
   <div class="topbar" id="topbar">
     <button class="topbar-back" id="backBtn" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
     <img class="topbar-logo" id="topbarLogo" src="https://new.recover365.kr/wp-content/uploads/2026/03/제목을-입력해주세요_-001-3.png" alt="로고">
-    <span class="topbar-title" id="topbarTitle">예상탕감률 조회</span>
+    <span class="topbar-title" id="topbarTitle">탕감률 진단</span>
     <span class="topbar-step" id="stepText"></span>
   </div>
   <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
@@ -465,12 +467,13 @@ input,textarea,select{-webkit-user-select:text;user-select:text;}
 <div class="result-overlay" id="resultOverlay">
   <div class="result-top">
     <button class="result-close" onclick="closeResult()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
-    <span class="result-top-title">무료 예상탕감률 조회 결과</span>
+    <span class="result-top-title">무료 탕감률 진단 결과</span>
     <div style="width:40px;"></div>
   </div>
   <div class="result-scroll"><div class="result-content" id="resultContent"></div></div>
   <div class="result-bottom-bar">
     <button class="btn-primary indigo" onclick="openConsultModal()">✅ 채무탕감 무료상담 신청</button>
+    <button class="btn-primary" style="background:var(--text-primary);margin-top:8px;" onclick="startDeepAnalysis()">심화분석하기 →</button>
     <button class="btn-secondary" onclick="closeResult();resetAll();">처음부터 다시하기</button>
   </div>
 </div>
@@ -611,24 +614,27 @@ function getQuestions(){
     {key:'intro2',type:'intro2'},
     {key:'intro3',type:'intro3'},
     {key:'font_size',type:'font_size'},
-    {key:'ageGroup',label:'기본 정보',title:'연령대를\n선택해주세요',hint:'연령에 따라 변제기간 단축 등\n특별 혜택이 적용될 수 있습니다',type:'choice',options:['20대','30대','40대','50대','60대 이상']},
-    {key:'job',label:'소득 정보',title:'현재 직업 상태를\n선택해주세요',hint:'소득 유형에 따라\n적합한 채무조정 제도가 달라집니다',type:'choice',options:['직장인 (정규직)','직장인 (계약직/일용직)','자영업자/사업자','프리랜서','아르바이트','휴직/구직 중','무직/주부']},
-    {key:'income',label:'소득 정보',title:'월 평균 실수령액을\n입력해주세요',hint:'실제 통장에 입금되는 금액 기준\n무소득이면 0을 입력해주세요',type:'number',placeholder:'예: 250',tipBox:{title:'💡 실수령액이란?',text:'세금·4대보험을 뺀 실제 입금 금액이에요.<br>급여명세서의 "실지급액"을 참고하세요.'}},
-    {key:'dependents',label:'가족 정보',title:'부양가족 수를\n선택해주세요',hint:'본인 포함\n부양가족이 많을수록 최저생계비가 높게 책정됩니다',type:'choice',options:['1명 (본인만)','2명','3명','4명','5명 이상']},
-    {key:'housing',label:'자산 정보',title:'주거 형태를\n선택해주세요',hint:'',type:'choice',options:['자가 (본인 소유)','전세','월세','무상거주 (부모님 등)']},
     {key:'totalDebt',label:'채무 정보',title:'총 채무금액을\n입력해주세요',hint:'신용대출 + 카드빚 + 담보대출 등\n모든 빚을 합산한 금액 (만원)',type:'number',placeholder:'예: 8000',tipBox:{title:'💡 총 채무란?',text:'은행대출, 카드빚, 사채 등 모든 빚을 합한 금액이에요.<br>정확하지 않아도 대략적인 금액을 입력해주세요.'}},
-    {key:'debtType',label:'채무 정보',title:'주요 채무 종류를\n선택해주세요',hint:'가장 큰 비중을 차지하는 채무',type:'choice',options:['신용대출 (은행/저축은행)','카드빚 (카드론/현금서비스/리볼빙)','담보대출 (주택/차량)','대부업체 대출','사채/개인 간 차용','보증채무','기타']},
-    {key:'creditorCount',label:'채무 정보',title:'채권자(빚진 곳) 수를\n선택해주세요',hint:'',type:'choice',options:['1~2곳','3~5곳','6~10곳','10곳 이상']},
+    {key:'income',label:'소득 정보',title:'월 평균 실수령액을\n입력해주세요',hint:'실제 통장에 입금되는 금액 기준\n무소득이면 0을 입력해주세요',type:'number',placeholder:'예: 250',tipBox:{title:'💡 실수령액이란?',text:'세금·4대보험을 뺀 실제 입금 금액이에요.<br>급여명세서의 "실지급액"을 참고하세요.'}},
     {key:'overdueStatus',label:'연체 정보',title:'현재 연체 상태를\n선택해주세요',hint:'',type:'choice',options:['연체 없음 (정상 상환 중)','연체 30일 미만','연체 31~89일','연체 90일 이상 (3개월↑)','연체 1년 이상']},
-    {key:'debtCause',label:'채무 정보',title:'채무 발생 주요 원인을\n선택해주세요',hint:'',type:'choice',options:['실직/소득 감소','사업 실패/폐업','과도한 의료비','투자 실패 (주식/코인 등)','생활비 부족','타인 보증/사기 피해','기타']},
-    {key:'hasAsset',label:'자산 정보',title:'보유 자산을\n선택해주세요',hint:'복수 해당 시 가장 큰 자산',type:'choice',options:['자산 없음','부동산 (주택/토지)','차량','전세보증금','예금/적금 (500만원↑)','보험해약환급금','퇴직금/퇴직연금']},
-    {key:'assetValue',label:'자산 정보',title:'총 자산 가치를\n입력해주세요',hint:'없으면 0을 입력해주세요 (만원)',type:'number',placeholder:'예: 3000'},
-    {key:'hasCollection',label:'추심 정보',title:'현재 압류/추심을\n받고 계신가요?',hint:'',type:'choice',options:['없음','채권추심 전화/문자만','급여 압류 중','재산(예금/부동산) 압류 중','가압류 진행 중']},
+    {key:'job',label:'소득 정보',title:'현재 직업 상태를\n선택해주세요',hint:'소득 유형에 따라\n적합한 채무조정 제도가 달라집니다',type:'choice',options:['직장인 (정규직)','직장인 (계약직/일용직)','자영업자/사업자','프리랜서','아르바이트','휴직/구직 중','무직/주부']},
+    {key:'dependents',label:'가족 정보',title:'부양가족 수를\n선택해주세요',hint:'본인 포함',type:'choice',options:['1명 (본인만)','2명','3명','4명','5명 이상']},
     {key:'loading',type:'loading'},
     {key:'gate',type:'gate'}
   ];
   return base;
 }
+// Deep analysis questions (shown after result)
+const deepQuestions=[
+  {key:'ageGroup',title:'연령대를 선택해주세요',type:'choice',options:['20대','30대','40대','50대','60대 이상']},
+  {key:'housing',title:'주거 형태를 선택해주세요',type:'choice',options:['자가 (본인 소유)','전세','월세','무상거주 (부모님 등)']},
+  {key:'debtType',title:'주요 채무 종류를 선택해주세요',type:'choice',options:['신용대출 (은행/저축은행)','카드빚 (카드론/현금서비스/리볼빙)','담보대출 (주택/차량)','대부업체 대출','사채/개인 간 차용','보증채무','기타']},
+  {key:'creditorCount',title:'채권자(빚진 곳) 수를 선택해주세요',type:'choice',options:['1~2곳','3~5곳','6~10곳','10곳 이상']},
+  {key:'debtCause',title:'채무 발생 주요 원인을 선택해주세요',type:'choice',options:['실직/소득 감소','사업 실패/폐업','과도한 의료비','투자 실패 (주식/코인 등)','생활비 부족','타인 보증/사기 피해','기타']},
+  {key:'hasAsset',title:'보유 자산을 선택해주세요',type:'choice',options:['자산 없음','부동산 (주택/토지)','차량','전세보증금','예금/적금 (500만원↑)','보험해약환급금','퇴직금/퇴직연금']},
+  {key:'assetValue',title:'총 자산 가치를 입력해주세요 (만원)',type:'number',placeholder:'예: 3000'},
+  {key:'hasCollection',title:'현재 압류/추심을 받고 계신가요?',type:'choice',options:['없음','채권추심 전화/문자만','급여 압류 중','재산(예금/부동산) 압류 중','가압류 진행 중']},
+];
 let questions=getQuestions();
 
 function formatMoney(n){if(!n||n===0)return'0원';if(n>=10000){const a=Math.floor(n/10000),b=n%10000;return b>0?`${a}억 ${b.toLocaleString()}만원`:`${a}억원`;}return`${n.toLocaleString()}만원`;}
@@ -699,14 +705,17 @@ function renderSlide(idx){
     s.innerHTML=`<div class="fontsize-content"><div class="fontsize-emoji">👀</div><div class="fontsize-title">잠깐!</div><div class="fontsize-sub">글씨는 어떤 크기가 좋으세요?</div><div class="fontsize-options">${sizes.map((sz,i)=>`<button class="fontsize-btn${i===0?' selected':''}" data-fs="${sz.fs}" onclick="selectFontSize(this,${sz.fs})"><div><div class="fs-label" style="font-size:${sz.px};">${sz.label}</div><div class="fs-sample" style="font-size:${sz.px};">${sz.sample}</div></div><div class="fs-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div></button>`).join('')}</div></div>`;
   } else if(q.type==='loading'){
     s.classList.add('loading-slide');
-    s.innerHTML=`<div class="loading-content"><div class="loading-ring"></div><div class="loading-title">AI 채무탕감 분석 중</div><div class="loading-desc">입력하신 정보를 바탕으로<br>맞춤 결과를 계산하고 있어요</div><div class="loading-steps"><div class="loading-step" id="ls1"><span class="loading-step-icon">📊</span><span>채무·소득 정보 분석</span></div><div class="loading-step" id="ls2"><span class="loading-step-icon">⚖️</span><span>적합 채무구제 제도 매칭</span></div><div class="loading-step" id="ls3"><span class="loading-step-icon">💰</span><span>예상 탕감금액 계산</span></div><div class="loading-step" id="ls4"><span class="loading-step-icon">✅</span><span>결과 정리</span></div></div></div>`;
+    s.innerHTML=`<div class="loading-content"><div class="loading-ring"></div><div class="loading-title">빅데이터 기반 승인가능성 검토 중</div><div class="loading-desc">입력하신 정보를 바탕으로<br>탕감률 진단 결과를 계산하고 있어요</div><div class="loading-steps"><div class="loading-step" id="ls1"><span class="loading-step-icon">📊</span><span>채무·소득 정보 분석</span></div><div class="loading-step" id="ls2"><span class="loading-step-icon">⚖️</span><span>적합 채무구제 제도 매칭</span></div><div class="loading-step" id="ls3"><span class="loading-step-icon">💰</span><span>예상 탕감금액 계산</span></div><div class="loading-step" id="ls4"><span class="loading-step-icon">✅</span><span>승인가능성 검토 완료</span></div></div></div>`;
   } else if(q.type==='gate'){
     s.classList.add('gate-slide');
+    const rate=analysisResult.reliefRate||0;
     s.innerHTML=`
       <div class="gate-content">
-        <div class="gate-badge">✅ AI 분석 완료</div>
-        <h2 class="gate-title">결과 확인을 위해<br>연락처를 남겨주세요</h2>
-        <p class="gate-desc">전문 상담사가 무료로 정확한<br>탕감 가능 여부를 안내드립니다.</p>
+        <div class="gate-prob">
+          <div class="gate-prob-label">채무탕감 가능성</div>
+          <div class="gate-prob-num"><span id="gateCounter">0</span><span class="gate-prob-unit">%</span></div>
+        </div>
+        <h2 class="gate-title">탕감 가능 여부, 승인가능성 진단<br>탕감액 진단 결과 안내를 위한<br>연락처를 입력해주세요.</h2>
         <div class="gate-form-group">
           <label class="gate-form-label">성함 <span class="req">*</span></label>
           <input type="text" id="gateName" class="gate-input" placeholder="성함을 입력해주세요">
@@ -726,6 +735,13 @@ function renderSlide(idx){
         <div class="gate-skip" onclick="showResultScreen()">건너뛰고 결과만 보기</div>
       </div>
     `;
+    // Animate counter after render
+    setTimeout(()=>{
+      const el=document.getElementById('gateCounter');if(!el)return;
+      const dur=1500,t0=performance.now();
+      function tick(now){const p=Math.min((now-t0)/dur,1);const e=1-Math.pow(1-p,3);el.textContent=Math.round(rate*e);if(p<1)requestAnimationFrame(tick);}
+      requestAnimationFrame(tick);
+    },400);
   } else if(q.type==='choice'){
     s.classList.add('question-slide');
     const tipHtml=q.tipBox?`<div class="tip-box"><div class="tip-box-title">${q.tipBox.title}</div><div class="tip-box-text">${q.tipBox.text}</div></div>`:'';
@@ -762,7 +778,7 @@ function showSlide(idx,dir='forward'){
   else{topLogo.classList.add('hidden');topTitle.classList.add('visible');}
   backBtn.classList.toggle('visible',idx>0&&!isLoading&&q.type!=='font_size');
 
-  const totalQ=questions.length-4;const qIdx=idx-3;
+  const totalQ=questions.length-5;const qIdx=idx-3;
   if(!isIntro&&!isLoading&&qIdx>0){stepText.classList.remove('visible');progressBar.classList.add('visible');document.getElementById('progressFill').style.width=`${(qIdx/totalQ)*100}%`;}
   else{stepText.classList.remove('visible');progressBar.classList.remove('visible');}
 
@@ -775,7 +791,7 @@ function showSlide(idx,dir='forward'){
     floatingBar.classList.add('dark-mode');
     setTimeout(()=>{animateCounter('cnt1',0,123000,2500,'');animateCounter('cnt2',0,180000,2500,'');},600);
   } else if(q.type==='intro3'){
-    floatingBar.style.display='block';floatingBtn.textContent='개인회생 무료분석 시작하기';floatingBtn.disabled=false;floatingBtn.className='btn-primary indigo bounce';floatingBtn.onclick=()=>advance();floatingSecBtn.style.display='none';
+    floatingBar.style.display='block';floatingBtn.textContent='무료 탕감률 진단 시작하기';floatingBtn.disabled=false;floatingBtn.className='btn-primary indigo bounce';floatingBtn.onclick=()=>advance();floatingSecBtn.style.display='none';
     floatingBar.classList.remove('dark-mode');
     setTimeout(()=>startSavingsCycle(),600);
   } else if(q.type==='font_size'){
@@ -961,7 +977,7 @@ function showResultScreen(){
       <div class="prob-hero-section">
         <div class="prob-confetti-wrap"><div class="confetti c1"></div><div class="confetti c2"></div><div class="confetti c3"></div><div class="confetti c4"></div><div class="confetti c5"></div><div class="confetti c6"></div><div class="confetti c7"></div><div class="confetti c8"></div><div class="confetti c9"></div><div class="confetti c10"></div><div class="confetti c11"></div><div class="confetti c12"></div></div>
         <div class="prob-hero">
-          <span class="prob-hero-badge">🤖 AI 채무탕감 분석 완료</span>
+          <span class="prob-hero-badge">빅데이터 기반 승인가능성 검토 완료</span>
           <div class="prob-hero-label">예상 탕감률</div>
           <div class="prob-hero-num"><span class="prob-hero-value" id="probCounter" data-val="${r.reliefRate}">0</span><span class="prob-hero-unit">%</span></div>
           <div class="prob-hero-bar"><div class="prob-hero-bar-fill" id="probBar"></div></div>
@@ -983,7 +999,7 @@ function showResultScreen(){
       </div>
 
       <div class="r-section">
-        <div class="r-section-title"><span class="ico">✨</span> AI 분석 인사이트</div>
+        <div class="r-section-title"><span class="ico">✨</span> 빅데이터 분석 인사이트</div>
         <div class="r-insights">${insHtml}</div>
       </div>
 
@@ -998,7 +1014,7 @@ function showResultScreen(){
 
       <div class="r-section">
         <div class="r-cta">
-          <div class="r-cta-notice"><span class="r-cta-notice-icon">⚠️</span><div class="r-cta-notice-text"><strong>본 결과는 AI 진단입니다</strong><br>실제 탕감률과 가능 여부는<br>전문 상담을 통해 확인하세요</div></div>
+          <div class="r-cta-notice"><span class="r-cta-notice-icon">⚠️</span><div class="r-cta-notice-text"><strong>본 결과는 빅데이터 기반 진단입니다</strong><br>실제 탕감률과 가능 여부는<br>전문 상담을 통해 확인하세요</div></div>
           <button class="btn-primary indigo" onclick="openConsultModal()">✅ 채무탕감 무료상담 신청</button>
         </div>
       </div>
@@ -1007,7 +1023,7 @@ function showResultScreen(){
         <details class="collapse-box"><summary>📝 입력 정보 확인</summary><div class="collapse-box-content"><div class="input-summary-grid">${summaryHtml}</div></div></details>
       </div>
 
-      <div class="r-notice">※ 본 결과는 AI가 입력 정보 기반으로 산출한 예상치입니다.<br>실제 탕감 가능금액은 전문 상담을 통해 정확히 확인하세요.</div>
+      <div class="r-notice">※ 본 결과는 빅데이터 기반으로 산출한 예상치입니다.<br>실제 탕감 가능금액은 전문 상담을 통해 정확히 확인하세요.</div>
     `;
   }
   document.getElementById('resultOverlay').classList.add('show');
@@ -1066,6 +1082,50 @@ function submitGateAndShowResult(){
 
 function closeResult(){document.getElementById('resultOverlay').classList.remove('show');}
 function resetAll(){currentStep=0;userData={};analysisResult={};questions=getQuestions();document.getElementById('slidesContainer').innerHTML='';document.getElementById('progressFill').style.width='0%';showSlide(0);}
+
+// Deep Analysis
+let deepStep=0;
+function startDeepAnalysis(){
+  closeResult();
+  deepStep=0;
+  showDeepQuestion();
+}
+function showDeepQuestion(){
+  if(deepStep>=deepQuestions.length){
+    // All done - re-analyze with full data and show result
+    analysisResult=analyze(userData);
+    showResultScreen();
+    return;
+  }
+  const dq=deepQuestions[deepStep];
+  let el=document.getElementById('deepModal');
+  if(!el){
+    el=document.createElement('div');el.id='deepModal';el.className='modal-backdrop';
+    el.innerHTML='<div class="modal-sheet" style="max-height:80vh;overflow-y:auto;"><div class="modal-handle"></div><div id="deepTitle" style="font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:16px;"></div><div id="deepBody"></div></div>';
+    document.body.appendChild(el);
+    el.addEventListener('click',function(e){if(e.target===el)el.classList.remove('show');});
+  }
+  document.getElementById('deepTitle').textContent=`심화분석 ${deepStep+1}/${deepQuestions.length}`;
+  const body=document.getElementById('deepBody');
+  if(dq.type==='choice'){
+    body.innerHTML=`<p style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:16px;">${dq.title}</p><div style="display:flex;flex-direction:column;gap:8px;">${dq.options.map(o=>`<button class="choice-item" onclick="selectDeep('${dq.key}','${o.replace(/'/g,"\\'")}')" style="min-height:48px;font-size:14px;">${o}</button>`).join('')}</div>`;
+  } else {
+    body.innerHTML=`<p style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:16px;">${dq.title}</p><input type="text" class="gate-input" id="deepInput" inputmode="numeric" placeholder="${dq.placeholder||''}" style="margin-bottom:12px;"><button class="btn-primary" onclick="submitDeepInput('${dq.key}')">다음</button>`;
+    setTimeout(()=>{const inp=document.getElementById('deepInput');if(inp)inp.focus();},300);
+  }
+  el.classList.add('show');
+}
+function selectDeep(key,val){
+  userData[key]=val;deepStep++;
+  document.getElementById('deepModal').classList.remove('show');
+  setTimeout(()=>showDeepQuestion(),200);
+}
+function submitDeepInput(key){
+  const inp=document.getElementById('deepInput');if(!inp||!inp.value.trim())return;
+  userData[key]=parseInt(inp.value.replace(/,/g,''))||0;deepStep++;
+  document.getElementById('deepModal').classList.remove('show');
+  setTimeout(()=>showDeepQuestion(),200);
+}
 
 function openConsultModal(){document.getElementById('consultModal').classList.add('show');}
 function openExpertModal(){document.getElementById('expertModal').classList.add('show');}
