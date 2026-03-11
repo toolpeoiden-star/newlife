@@ -118,18 +118,16 @@ input,textarea,select{-webkit-user-select:text;user-select:text;}
 .s2-stat-line strong{color:var(--blue);font-weight:800;font-size:17px;}
 /* Typewriter fullscreen slide */
 .intro-type-slide{background:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative;overflow:hidden;}
-.intro-type-bg{position:absolute;inset:0;overflow:hidden;}
-.intro-type-bg .orb{position:absolute;border-radius:50%;filter:blur(60px);opacity:0.12;animation:orbFloat 8s ease-in-out infinite;}
-.intro-type-bg .orb-1{width:200px;height:200px;background:#3182F6;top:15%;left:-10%;animation-delay:0s;}
-.intro-type-bg .orb-2{width:160px;height:160px;background:#00C471;bottom:20%;right:-5%;animation-delay:-3s;}
-.intro-type-bg .orb-3{width:120px;height:120px;background:#A78BFA;top:50%;left:60%;animation-delay:-5s;}
-@keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1);}25%{transform:translate(30px,-20px) scale(1.1);}50%{transform:translate(-20px,30px) scale(0.9);}75%{transform:translate(20px,10px) scale(1.05);};}
+.tw-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1.2s ease;z-index:0;}
+.tw-bg.show{opacity:0.1;}
 .s2-typewriter-full{position:relative;z-index:1;width:100%;max-width:400px;height:160px;padding:0 var(--px);}
-.tw-layer{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;font-size:21px;font-weight:700;color:var(--text-primary);line-height:1.65;padding:0 var(--px);opacity:0;transform:translateY(12px);transition:opacity 0.8s ease,transform 0.8s ease;}
+.tw-layer{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:clamp(18px,5vw,21px);font-weight:700;color:var(--text-primary);line-height:1.65;padding:0 var(--px);opacity:0;transform:translateY(12px);transition:opacity 0.8s ease,transform 0.8s ease;}
+.tw-hl{color:var(--blue);font-weight:900;}
+.tw-hl2{color:var(--indigo);font-weight:900;}
 .tw-layer.tw-active{opacity:1;transform:translateY(0);}
 .tw-layer.tw-out{opacity:0;transform:translateY(-12px);}
-.tw-cursor{display:inline-block;width:2px;height:1.1em;background:var(--blue);margin-left:2px;vertical-align:text-bottom;animation:twBlink 0.5s step-end infinite;}
-@keyframes twBlink{0%,100%{opacity:1;}50%{opacity:0;}}
+.tw-cta-btn{position:absolute;bottom:calc(40px + var(--safe-bottom));left:var(--px);right:var(--px);z-index:2;padding:16px 20px;background:var(--indigo);color:white;font-size:var(--t2);font-weight:700;font-family:inherit;border:none;border-radius:14px;cursor:pointer;transition:all 0.2s;animation:ctaBounce 2s cubic-bezier(0.28,0.84,0.42,1) infinite;box-shadow:0 4px 20px rgba(67,56,202,0.4);}
+.tw-cta-btn:active{transform:scale(0.98);}
 
 /* ===== SLIDE 3 - Toss 8px grid spacing ===== */
 .intro-slide-3{overflow-y:auto !important;overflow-x:hidden;padding-bottom:calc(96px + var(--safe-bottom)) !important;}
@@ -262,11 +260,11 @@ input,textarea,select{-webkit-user-select:text;user-select:text;}
 /* Gate form (before result) */
 .gate-slide{background:var(--bg);display:flex;flex-direction:column;justify-content:center;}
 .gate-content{padding:0 var(--px);flex:1;display:flex;flex-direction:column;justify-content:center;max-width:420px;margin:0 auto;width:100%;}
-.gate-prob{text-align:center;margin-bottom:24px;}
+.gate-prob{text-align:center;margin-bottom:20px;}
 .gate-prob-label{font-size:var(--t4);font-weight:600;color:var(--text-tertiary);margin-bottom:4px;}
-.gate-prob-num{font-size:56px;font-weight:900;color:var(--blue);letter-spacing:-2px;line-height:1;}
-.gate-prob-unit{font-size:28px;font-weight:800;color:var(--blue);}
-.gate-title{font-size:var(--t3);font-weight:600;line-height:1.6;color:var(--text-secondary);margin-bottom:28px;}
+.gate-prob-num{font-size:clamp(40px,12vw,56px);font-weight:900;color:var(--blue);letter-spacing:-2px;line-height:1;}
+.gate-prob-unit{font-size:clamp(20px,6vw,28px);font-weight:800;color:var(--blue);}
+.gate-title{font-size:var(--t3);font-weight:600;line-height:1.6;color:var(--text-secondary);margin-bottom:24px;word-break:keep-all;}
 .gate-form-group{margin-bottom:16px;}
 .gate-form-label{font-size:var(--t3);font-weight:600;margin-bottom:8px;display:block;color:var(--text-primary);}
 .gate-form-label .req{color:var(--red);}
@@ -686,8 +684,9 @@ function renderSlide(idx){
   } else if(q.type==='introType'){
     s.classList.add('intro-slide','intro-type-slide');
     s.innerHTML=`
-      <div class="intro-type-bg"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div></div>
+      <div class="tw-bg" id="twBg"></div>
       <div class="s2-typewriter-full" id="s2Typewriter"></div>
+      <button class="tw-cta-btn" onclick="advance()">채무탕감 초정밀 진단하기 ›</button>
     `;
   } else if(q.type==='loading'){
     s.classList.add('loading-slide');
@@ -701,7 +700,7 @@ function renderSlide(idx){
           <div class="gate-prob-label">채무탕감 가능성</div>
           <div class="gate-prob-num"><span id="gateCounter">0</span><span class="gate-prob-unit">%</span></div>
         </div>
-        <h2 class="gate-title">탕감 가능 여부, 승인가능성 진단<br>탕감액 진단 결과 안내를 위한<br>연락처를 입력해주세요.</h2>
+        <h2 class="gate-title">탕감 가능 여부, 승인가능성 진단 탕감액 진단 결과 안내를 위한 연락처를 입력해주세요.</h2>
         <div class="gate-form-group">
           <label class="gate-form-label">성함 <span class="req">*</span></label>
           <input type="text" id="gateName" class="gate-input" placeholder="성함을 입력해주세요">
@@ -799,30 +798,42 @@ function showSlide(idx,dir='forward'){
   }
 }
 
-// Simple sentence fade - one at a time
+// Sentence fade with background images
 let twTimer=null;
 function startTypewriter(){
   if(twTimer){clearTimeout(twTimer);twTimer=null;}
   const container=document.getElementById('s2Typewriter');if(!container)return;
-  container.innerHTML='<div class="tw-layer tw-active" id="twLine"></div>';
+  const bg=document.getElementById('twBg');
+  container.innerHTML='<div class="tw-layer" id="twLine"></div>';
   const line=document.getElementById('twLine');
+  const imgs=[
+    'https://biz-policy.com/wp-content/uploads/2026/03/KakaoTalk_20260311_214444174.png',
+    'https://biz-policy.com/wp-content/uploads/2026/03/KakaoTalk_20260311_214705754.png',
+    'https://biz-policy.com/wp-content/uploads/2026/03/KakaoTalk_20260311_214811411.png',
+    'https://biz-policy.com/wp-content/uploads/2026/03/KakaoTalk_20260311_214946064.png',
+    'https://biz-policy.com/wp-content/uploads/2026/03/KakaoTalk_20260311_214714213.png'
+  ];
+  // Preload images
+  imgs.forEach(u=>{const i=new Image();i.src=u;});
   const msgs=[
-    '2025년 <strong style="color:var(--blue)">123,000</strong>명이<br>막막한 현실에서<br>새로운 삶을 찾았습니다.',
-    '<strong style="color:var(--blue)">180,000</strong>명이<br>회복하는 삶을<br>살아가고 있습니다.',
-    '얼마나 변제될 수 있을까?',
-    '과연 나도<br>대상에 포함될까?',
-    '기간, 비용은<br>얼마나 될까?',
-    '<strong>진단의 도움을 받아보세요.</strong>'
+    '<div>2025년 <b class="tw-hl">123,000</b>명이</div><div>막막한 현실에서</div><div><b class="tw-hl">새로운 삶</b>을 찾았습니다.</div>',
+    '<div><b class="tw-hl">180,000</b>명이</div><div><b class="tw-hl">회복하는 삶</b>을</div><div>살아가고 있습니다.</div>',
+    '<div>얼마나 변제될 수 있을까?</div><div>과연 나도 <b class="tw-hl">대상에 포함</b>될까?</div>',
+    '<div>기간, 비용은</div><div><b class="tw-hl">얼마나</b> 될까?</div>',
+    '<div><b class="tw-hl2">진단의 도움</b>을</div><div>받아보세요.</div>'
   ];
   let mi=0;
   function show(){
-    if(mi>=msgs.length){setTimeout(()=>advance(),400);return;}
+    if(mi>=msgs.length){setTimeout(()=>advance(),500);return;}
+    // Set background image
+    if(bg){bg.style.backgroundImage='url('+imgs[mi]+')';bg.classList.add('show');}
     line.innerHTML=msgs[mi];
     line.className='tw-layer tw-active';
     twTimer=setTimeout(()=>{
       line.className='tw-layer tw-out';
+      if(bg)bg.classList.remove('show');
       twTimer=setTimeout(()=>{mi++;show();},800);
-    },2000);
+    },2200);
   }
   show();
 }
@@ -1064,41 +1075,39 @@ function showResultScreen(){
   }
 }
 
+let gateSubmitting=false;
 function submitGateAndShowResult(){
+  if(gateSubmitting)return;
+  gateSubmitting=true;
+  const btn=document.getElementById('floatingBtn');
+  if(btn){btn.disabled=true;btn.textContent='접수 중...';}
   const name=document.getElementById('gateName')?.value.trim()||'';
   const p1=document.getElementById('gatePhone1')?.value||'010';
   const p2=document.getElementById('gatePhone2')?.value.trim()||'';
   const p3=document.getElementById('gatePhone3')?.value.trim()||'';
   const agreed=document.getElementById('gateAgree')?.checked;
-  if(!name){alert('성함을 입력해주세요.');return;}
-  if(p2.length<3||p3.length<4){alert('연락처를 정확히 입력해주세요.');return;}
-  if(!agreed){alert('개인정보취급방침에 동의해주세요.');return;}
+  if(!name){alert('성함을 입력해주세요.');gateSubmitting=false;if(btn){btn.disabled=false;btn.textContent='결과 확인하기';}return;}
+  if(p2.length<3||p3.length<4){alert('연락처를 정확히 입력해주세요.');gateSubmitting=false;if(btn){btn.disabled=false;btn.textContent='결과 확인하기';}return;}
+  if(!agreed){alert('개인정보취급방침에 동의해주세요.');gateSubmitting=false;if(btn){btn.disabled=false;btn.textContent='결과 확인하기';}return;}
   const phone=`${p1}-${p2}-${p3}`;
   const now=new Date();
   const data=new URLSearchParams();
   data.append('작업날짜',now.toLocaleDateString('ko-KR'));
   data.append('작업시간',now.toLocaleTimeString('ko-KR'));
-  data.append('성함',name);
-  data.append('연락처',phone);
-  data.append('연령대',userData.ageGroup||'');
-  data.append('직업',userData.job||'');
+  data.append('성함',name);data.append('연락처',phone);
+  data.append('연령대',userData.ageGroup||'');data.append('직업',userData.job||'');
   data.append('월소득',userData.income?`${userData.income}만원`:'0원');
-  data.append('부양가족',userData.dependents||'');
-  data.append('주거형태',userData.housing||'');
+  data.append('부양가족',userData.dependents||'');data.append('주거형태',userData.housing||'');
   data.append('총채무',userData.totalDebt?`${userData.totalDebt}만원`:'');
-  data.append('채무종류',userData.debtType||'');
-  data.append('채권자수',userData.creditorCount||'');
-  data.append('연체상태',userData.overdueStatus||'');
-  data.append('채무원인',userData.debtCause||'');
-  data.append('보유자산',userData.hasAsset||'');
-  data.append('자산가치',userData.assetValue?`${userData.assetValue}만원`:'0원');
+  data.append('채무종류',userData.debtType||'');data.append('채권자수',userData.creditorCount||'');
+  data.append('연체상태',userData.overdueStatus||'');data.append('채무원인',userData.debtCause||'');
+  data.append('보유자산',userData.hasAsset||'');data.append('자산가치',userData.assetValue?`${userData.assetValue}만원`:'0원');
   data.append('압류/추심',userData.hasCollection||'');
   data.append('추천제도',analysisResult.program||'');
   data.append('예상탕감률',analysisResult.reliefRate?`${analysisResult.reliefRate}%`:'');
   data.append('예상탕감금액',analysisResult.reliefAmount?formatMoney(analysisResult.reliefAmount):'');
   data.append('예상월변제금',analysisResult.monthlyPayment?`${analysisResult.monthlyPayment}만원`:'면제');
-  data.append('분석일시',now.toLocaleString('ko-KR'));
-  data.append('개인정보동의','동의');
+  data.append('분석일시',now.toLocaleString('ko-KR'));data.append('개인정보동의','동의');
   data.append('유입경로',sessionStorage.getItem('first_referrer')||'UNKNOWN');
   data.append('접수경로','결과확인 게이트');
   data.append('방문자ID',TRK.vid);
@@ -1108,8 +1117,9 @@ function submitGateAndShowResult(){
   data.append('기기',TRK.device);
   data.append('체류시간_초',String(TRK.getDuration()));
   TRK.converted=true;
-  navigator.sendBeacon(SHEET_URL,data);
-  showResultScreen();
+  fetch(SHEET_URL,{method:'POST',body:data,mode:'no-cors'})
+  .then(()=>{showResultScreen();})
+  .catch(()=>{showResultScreen();});
 }
 
 function closeResult(){document.getElementById('resultOverlay').classList.remove('show');}
@@ -1202,9 +1212,9 @@ function submitForm(e){
   data.append('기기',TRK.device);
   data.append('체류시간_초',String(TRK.getDuration()));
   TRK.converted=true;
-  fetch(SHEET_URL,{method:'POST',body:data})
+  fetch(SHEET_URL,{method:'POST',body:data,mode:'no-cors'})
   .then(()=>{closeModal('consultModal');document.getElementById('successModal').classList.add('show');document.getElementById('consultForm').reset();})
-  .catch(()=>alert('오류가 발생했습니다.'))
+  .catch(()=>{closeModal('consultModal');document.getElementById('successModal').classList.add('show');document.getElementById('consultForm').reset();})
   .finally(()=>{isSubmitting=false;sb.disabled=false;sb.textContent='채무탕감 상담 신청하기';});
 }
 ['phone2','phone3'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('input',function(){this.value=this.value.replace(/[^0-9]/g,'');});});
